@@ -1,0 +1,2875 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Licyum — Ekosistem Terpadu Penerbitan Buku, Jurnal Ilmiah & Pelatihan</title>
+  
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              navy: '#0F2850',
+              darkNavy: '#0A192F',
+              royalBlue: '#1E3A8A',
+              sapphire: '#2563EB',
+              gold: '#F59E0B',
+              amberDark: '#D97706',
+              emeraldDark: '#065F46'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & ReactDOM via CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Babel Standalone for in-browser JSX parsing -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons via CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 antialiased selection:bg-amber-400 selection:text-slate-950">
+  <div id="root"></div>
+
+  <!-- Main Application Script -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- DUMMY DATA ---
+    const PUBLISHING_SERVICES = [
+      {
+        id: 'paket-penerbitan',
+        title: 'Paket Penerbitan Buku',
+        subtitle: 'Mulai dari Naskah Mentah hingga Buku Cetak Ber-ISBN Resmi',
+        description: 'Fasilitas lengkap: pengurusan ISBN & Barcode resmi Perpusnas, tata letak interior profesional, desain cover premium, proofreading, cetak bukti terbit, dan distribusi ke marketplace.',
+        badge: 'Paling Populer',
+        packages: [
+          { name: 'Mandiri (Hemat)', price: 'Rp 1.450.000', popular: false },
+          { name: 'Akademisi (Silver)', price: 'Rp 2.850.000', popular: true },
+          { name: 'Mahakarya (Gold)', price: 'Rp 4.950.000', popular: false }
+        ]
+      },
+      {
+        id: 'isbn-haki',
+        title: 'Pengurusan ISBN & HAKI Cepat',
+        subtitle: 'Legalitas Hak Cipta & Pengakuan Resmi Karya Anda',
+        description: 'Kami adalah anggota resmi IKAPI yang memiliki jalur kemitraan terverifikasi dengan Perpustakaan Nasional RI dan Direktorat Jenderal Kekayaan Intelektual (DJKI) Kemenkumham.',
+        badge: 'Legalitas Terjamin',
+        highlights: [
+          'Proses ISBN 3-7 hari kerja sesuai regulasi Perpusnas',
+          'Sertifikat Resmi E-Hak Cipta DJKI keluar dalam 1-2 hari kerja',
+          'Barcode ISBN vektor resolusi tinggi siap cetak'
+        ]
+      },
+      {
+        id: 'konversi-karya',
+        title: 'Konversi Skripsi, Tesis & Disertasi Jadi Buku',
+        subtitle: 'Ubah Karya Ilmiah Kampus Menjadi Buku Referensi / Monograf Ber-ISBN',
+        description: 'Tim editor doktoral Licyum merestrukturisasi format kaku tugas akhir menjadi buku ilmiah berbobot sesuai standar BSNP dan Perpusnas untuk syarat angka kredit (KUM) dosen.',
+        badge: 'Spesialis Akademisi',
+        highlights: [
+          'Menghilangkan format bab skripsi kaku jadi bab tematik menarik',
+          'Peer-review oleh mitra bestari bergelar Profesor / Doktor',
+          'Bisa langsung diajukan klaim kum dosen 20 - 40 poin'
+        ]
+      }
+    ];
+
+    const BOOKS_DATA = [
+      {
+        id: 'lic-book-001',
+        title: 'Metodologi Penelitian Kualitatif & Mixed Methods: Panduan Komprehensif Akademisi',
+        author: 'Prof. Dr. Hendra Suprayitno, M.Si.',
+        authorTitle: 'Guru Besar Metodologi Penelitian UNY & Reviewer Nasional',
+        category: 'Pendidikan',
+        coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600',
+        price: 115000,
+        originalPrice: 145000,
+        rating: 4.9,
+        reviewsCount: 128,
+        pages: 348,
+        year: 2025,
+        isbn: '978-623-8891-12-8',
+        synopsis: 'Buku ini mengupas tuntas paradigma penelitian kualitatif kontemporer, perancangan instrumen, teknik triangulasi data, hingga integrasi mixed methods (triangulasi konvergen dan eksplanatori sekuensial) yang dilengkapi studi kasus nyata di dunia pendidikan dan sosial.',
+        tags: ['Metode Riset', 'Akademisi', 'Kualitatif', 'Tesis & Disertasi']
+      },
+      {
+        id: 'lic-book-002',
+        title: 'Strategi Menembus Jurnal Bereputasi Internasional Terindeks Scopus & WoS',
+        author: 'Dr. Ahmad Fauzan, Ph.D. & Tim Editor Licyum',
+        authorTitle: 'Senior Reviewer di IEEE & Elsevier',
+        category: 'Teknologi & AI',
+        coverUrl: 'https://images.unsplash.com/photo-1532012164546-f432f2e3777a?auto=format&fit=crop&q=80&w=600',
+        price: 135000,
+        originalPrice: 175000,
+        rating: 5.0,
+        reviewsCount: 240,
+        pages: 290,
+        year: 2025,
+        isbn: '978-623-8891-24-1',
+        synopsis: 'Buku panduan praktis dari A sampai Z mengenai cara memilih target jurnal Q1-Q4, menyusun naskah berstandar IMRaD tingkat lanjut, merespons feedback reviewer yang tajam, hingga strategi etis menghadapi desk reject.',
+        tags: ['Scopus', 'Publikasi', 'Dosen', 'Jurnal Internasional']
+      },
+      {
+        id: 'lic-book-003',
+        title: 'Kecerdasan Buatan (Generative AI) dalam Transformasi Pendidikan Tinggi Abad 21',
+        author: 'Ir. Dian Kusuma Wardhana, M.Eng., Ph.D.',
+        authorTitle: 'Dosen Teknik Informatika UI & Peneliti NLP',
+        category: 'Teknologi & AI',
+        coverUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=600',
+        price: 120000,
+        originalPrice: 150000,
+        rating: 4.8,
+        reviewsCount: 96,
+        pages: 312,
+        year: 2025,
+        isbn: '978-623-8891-30-2',
+        synopsis: 'Membahas integrasi etis model bahasa besar (LLM) seperti ChatGPT, Claude, dan Gemini ke dalam pedagogi modern, asesmen autentik mahasiswa, serta mitigasi academic dishonesty di era digital.',
+        tags: ['Artificial Intelligence', 'Pedagogi Digital', 'Kampus Merdeka']
+      },
+      {
+        id: 'lic-book-004',
+        title: 'Hukum Siber, Hak Kekayaan Intelektual, dan Perlindungan Data Pribadi di Indonesia',
+        author: 'Dr. Natalia Christie, S.H., M.Kn., LL.M.',
+        authorTitle: 'Pakar Hukum Siber & Konsultan Regulasi Digital',
+        category: 'Hukum',
+        coverUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&q=80&w=600',
+        price: 125000,
+        originalPrice: 160000,
+        rating: 4.9,
+        reviewsCount: 82,
+        pages: 276,
+        year: 2024,
+        isbn: '978-623-8891-05-0',
+        synopsis: 'Kajian komprehensif implementasi UU Perlindungan Data Pribadi (UU PDP No. 27/2022), hukum siber, hak cipta digital, dan studi kasus penanganan kebocoran data di era komputasi awan.',
+        tags: ['UU PDP', 'Hukum Bisnis', 'HAKI Digital', 'Cyber Law']
+      },
+      {
+        id: 'lic-book-005',
+        title: 'Manajemen Strategik Berkelanjutan: Teori, Kasus Korporat, & ESG di Asia Tenggara',
+        author: 'Dr. Bambang Wicaksono, S.E., M.B.A.',
+        authorTitle: 'Praktisi Bisnis & Dosen Manajemen Strategi UGM',
+        category: 'Manajemen & Bisnis',
+        coverUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600',
+        price: 130000,
+        originalPrice: 165000,
+        rating: 4.7,
+        reviewsCount: 64,
+        pages: 360,
+        year: 2024,
+        isbn: '978-623-8891-18-0',
+        synopsis: 'Eksplorasi strategi keunggulan bersaing berorientasi ESG (Environmental, Social, Governance) dengan pendekatan terintegrasi antara studi empiris dan implementasi industri manufaktur maupun perbankan di ASEAN.',
+        tags: ['ESG', 'Manajemen Bisnis', 'Studi Kasus', 'Keberlanjutan']
+      },
+      {
+        id: 'lic-book-006',
+        title: 'Epidemiologi Komprehensif dan Kebijakan Kesehatan Masyarakat Berbasis Bukti',
+        author: 'dr. Farah Annisa, M.Epid., Ph.D.',
+        authorTitle: 'Peneliti Epidemiologi & Konsultan WHO Indonesia',
+        category: 'Kesehatan & Medis',
+        coverUrl: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=600',
+        price: 145000,
+        originalPrice: 180000,
+        rating: 4.9,
+        reviewsCount: 75,
+        pages: 410,
+        year: 2025,
+        isbn: '978-623-8891-44-9',
+        synopsis: 'Buku pegangan wajib bagi dokter, akademisi kesehatan, dan pembuat kebijakan dalam merumuskan evidence-based policy berbasis pemodelan transmisi penyakit menular dan pencegahan sindemik pascapandemi.',
+        tags: ['Kesehatan Masyarakat', 'Epidemiologi', 'Kedokteran', 'Riset Medis']
+      },
+      {
+        id: 'lic-book-007',
+        title: 'Psikologi Pendidikan Inklusif: Mengembangkan Potensi Anak di Sekolah Reguler',
+        author: 'Siti Rahmawati, S.Psi., M.Ed., Ph.D.',
+        authorTitle: 'Konsultan Pendidikan Inklusi & Dosen Psikologi Perkembangan',
+        category: 'Pendidikan',
+        coverUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=600',
+        price: 108000,
+        originalPrice: 135000,
+        rating: 4.8,
+        reviewsCount: 53,
+        pages: 254,
+        year: 2024,
+        isbn: '978-623-8891-09-8',
+        synopsis: 'Panduan kurikulum diferensiasi, asesmen diagnostik dini, modifikasi perilaku, dan teknik konseling ramah anak bagi guru dan praktisi pendidikan yang menyelenggarakan program kelas inklusi.',
+        tags: ['Pendidikan Inklusi', 'Psikologi Anak', 'Guru Penggerak']
+      },
+      {
+        id: 'lic-book-008',
+        title: 'Sosiologi Urban dan Perubahan Sosial di Megapolitan Nusantara',
+        author: 'Dr. Ilham Satria Pratama, S.Sos., M.Si.',
+        authorTitle: 'Sosiolog Perkotaan & Dosen Ilmu Sosial Unair',
+        category: 'Sosial Humaniora',
+        coverUrl: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?auto=format&fit=crop&q=80&w=600',
+        price: 110000,
+        originalPrice: 140000,
+        rating: 4.7,
+        reviewsCount: 48,
+        pages: 298,
+        year: 2024,
+        isbn: '978-623-8891-52-4',
+        synopsis: 'Analisis mendalam mengenai dinamika ruang publik, gentrifikasi, segregasi spasial, serta transformasi mata pencaharian komunitas pinggiran di era aglomerasi perkotaan modern Indonesia.',
+        tags: ['Sosiologi', 'Tata Kota', 'Humaniora', 'Riset Sosial']
+      }
+    ];
+
+    const JOURNALS_DATA = [
+      {
+        id: 'ljet',
+        name: 'Licyum Journal of Educational Technology (LJET)',
+        acronym: 'LJET',
+        sintaBadge: 'SINTA 2',
+        indexing: ['SINTA 2', 'DOAJ', 'Crossref (DOI)', 'Google Scholar', 'Garuda'],
+        pIssn: '2807-6125',
+        eIssn: '2807-6133',
+        fieldOfStudy: 'Pendidikan & Teknologi Pembelajaran',
+        frequency: 'Triwulanan (Maret, Juni, September, Desember)',
+        coverImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=400',
+        editorInChief: 'Prof. Dr. Supardi, M.Pd. (UNY)',
+        ojsUrl: 'https://journal.licyum.id/index.php/ljet'
+      },
+      {
+        id: 'jist',
+        name: 'Jurnal Inovasi Sains & Terapan (JIST)',
+        acronym: 'JIST',
+        sintaBadge: 'SINTA 3',
+        indexing: ['SINTA 3', 'DOAJ', 'Crossref (DOI)', 'Google Scholar', 'Copernicus'],
+        pIssn: '2774-8841',
+        eIssn: '2774-885X',
+        fieldOfStudy: 'Ilmu Komputer, Rekayasa Sains & Terapan',
+        frequency: 'Semesteran (Mei & November)',
+        coverImage: 'https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&q=80&w=400',
+        editorInChief: 'Dr. Eng. Teguh Prasetyo, M.T. (ITB)',
+        ojsUrl: 'https://journal.licyum.id/index.php/jist'
+      },
+      {
+        id: 'lser',
+        name: 'Licyum Social & Economic Review (LSER)',
+        acronym: 'LSER',
+        sintaBadge: 'SINTA 3',
+        indexing: ['SINTA 3', 'Crossref (DOI)', 'Google Scholar', 'Garuda', 'BASE'],
+        pIssn: '2962-3347',
+        eIssn: '2962-3355',
+        fieldOfStudy: 'Ekonomi, Manajemen & Kebijakan Publik',
+        frequency: 'Triwulanan (Feb, Mei, Agt, Nov)',
+        coverImage: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=400',
+        editorInChief: 'Dr. Miranti Maharani, S.E., M.Sc. (UI)',
+        ojsUrl: 'https://journal.licyum.id/index.php/lser'
+      },
+      {
+        id: 'jkpt',
+        name: 'Jurnal Konseling & Psikologi Terapan (JKPT)',
+        acronym: 'JKPT',
+        sintaBadge: 'SINTA 4',
+        indexing: ['SINTA 4', 'Crossref (DOI)', 'Google Scholar', 'Garuda'],
+        pIssn: '2829-9022',
+        eIssn: '2829-9030',
+        fieldOfStudy: 'Psikologi Terapan & Bimbingan Konseling',
+        frequency: 'Semesteran (Juni & Desember)',
+        coverImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400',
+        editorInChief: 'Rina Kusumaningtyas, M.Psi. (UGM)',
+        ojsUrl: 'https://journal.licyum.id/index.php/jkpt'
+      }
+    ];
+
+    const RECENT_ARTICLES = [
+      {
+        id: 'art-001',
+        journalId: 'ljet',
+        journalName: 'Licyum Journal of Educational Technology (LJET)',
+        title: 'Implementasi Model Project-Based Learning Berbantuan AI Generatif untuk Meningkatkan Keterampilan Pemecahan Masalah Mahasiswa Vokasi',
+        authors: ['Fajar Anugrah', 'Tri Wahyuni', 'Dr. Muhammad Ridwan'],
+        affiliation: 'Politeknik Negeri Bandung & UPI',
+        doi: '10.58921/ljet.v5i2.148',
+        publicationDate: '15 Januari 2026',
+        volume: 'Vol. 5 No. 2 (2026)',
+        citations: 14,
+        abstract: 'Penelitian eksperimen kuasi ini mengevaluasi pengaruh penerapan model pembelajaran berbasis proyek (PjBL) yang dipadukan dengan scaffold kecerdasan buatan generatif pada 124 mahasiswa vokasi rekayasa. Hasil pre-test dan post-test menunjukkan peningkatan Normalized Gain (g = 0.72) secara signifikan dibanding kelas kontrol tradisional.',
+        keywords: ['Project-Based Learning', 'Generative AI', 'Pendidikan Vokasi']
+      },
+      {
+        id: 'art-002',
+        journalId: 'jist',
+        journalName: 'Jurnal Inovasi Sains & Terapan (JIST)',
+        title: 'Optimasi Arsitektur Convolutional Neural Network (CNN) untuk Deteksi Dini Penyakit Daun Padi Berbasis Citra Hiperspektral Lapangan',
+        authors: ['Budi Santoso', 'Dr. Eng. Dian Permana', 'Siti Maulida'],
+        affiliation: 'Institut Pertanian Bogor (IPB)',
+        doi: '10.58921/jist.v4i1.92',
+        publicationDate: '28 Desember 2025',
+        volume: 'Vol. 4 No. 1 (2025)',
+        citations: 9,
+        abstract: 'Studi ini mengembangkan modifikasi arsitektur ResNet-50 dengan mekanisme attention gating spasial untuk mendeteksi empat tipe penyakit daun padi. Model mencapai akurasi uji 98.4% dengan latensi inferensi 32 ms pada edge device.',
+        keywords: ['Deep Learning', 'CNN', 'Precision Agriculture', 'Edge AI']
+      },
+      {
+        id: 'art-003',
+        journalId: 'lser',
+        journalName: 'Licyum Social & Economic Review (LSER)',
+        title: 'Dampak Literasi Keuangan Digital dan Layanan PayLater terhadap Perilaku Konsumtif Generasi Z: Studi Empiris Struktural Equation Modeling (SEM)',
+        authors: ['Nadia Putri Utami', 'Prof. Dr. Hendri Rusli, M.Sc.'],
+        affiliation: 'Universitas Indonesia',
+        doi: '10.58921/lser.v6i3.210',
+        publicationDate: '10 Desember 2025',
+        volume: 'Vol. 6 No. 3 (2025)',
+        citations: 22,
+        abstract: 'Menggunakan sampel 480 responden Gen Z di Jabodetabek, penelitian ini membuktikan bahwa akses PayLater memiliki pengaruh positif kuat terhadap perilaku konsumtif, namun dapat dimoderasi signifikan oleh literasi keuangan.',
+        keywords: ['Literasi Keuangan', 'Fintech', 'PayLater', 'Generasi Z']
+      },
+      {
+        id: 'art-004',
+        journalId: 'jkpt',
+        journalName: 'Jurnal Konseling & Psikologi Terapan (JKPT)',
+        title: 'Efektivitas Brief Mindfulness-Based Cognitive Therapy (MBCT) dalam Menurunkan Tingkat Burnout pada Guru Honorer Tingkat Menengah',
+        authors: ['Dewi Lestari, M.Psi.', 'Agus Priyono, S.Psi.'],
+        affiliation: 'Universitas Sebelas Maret (UNS)',
+        doi: '10.58921/jkpt.v3i2.84',
+        publicationDate: '18 November 2025',
+        volume: 'Vol. 3 No. 2 (2025)',
+        citations: 7,
+        abstract: 'Intervensi MBCT berdurasi empat minggu dilakukan terhadap 36 guru honorer. Uji Wilcoxon Signed-Rank membuktikan adanya penurunan skor kelelahan emosional yang signifikan secara statistik (p < 0.001).',
+        keywords: ['Mindfulness', 'Teacher Burnout', 'Kesehatan Mental Guru']
+      }
+    ];
+
+    const TRAINING_PROGRAMS = [
+      {
+        id: 'train-001',
+        title: 'Masterclass: Penulisan Buku Ajar & Monograf Ber-ISBN Sesuai Standar BSNP & BKD Dosen',
+        category: 'Penulisan & Publikasi',
+        instructor: {
+          name: 'Prof. Dr. Agus Raharjo, M.Si.',
+          role: 'Asesor BKD Nasional & Penulis 28 Judul Buku',
+          avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200'
+        },
+        date: '18 - 20 Maret 2026',
+        time: '08.30 - 16.00 WIB',
+        durationJp: 32,
+        method: 'Online (Zoom HD)',
+        quota: 60,
+        enrolled: 48,
+        price: 650000,
+        earlyBirdPrice: 450000,
+        bannerImage: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=700',
+        benefits: [
+          'Sertifikat Resmi 32 JP Bernomor Induk',
+          'Pendampingan Bedah Naskah sampai Siap Terbit ISBN',
+          'Template Baku Buku Monograf & Referensi (Word)'
+        ]
+      },
+      {
+        id: 'train-002',
+        title: 'Workshop Intensif: Tembus Jurnal Bereputasi Internasional Scopus Q1-Q2 & Penulisan IMRaD Unggul',
+        category: 'Penulisan & Publikasi',
+        instructor: {
+          name: 'Dr. Ratna Dewi Sartika, M.Ed., Ph.D.',
+          role: 'Reviewer Internasional & Peneliti Terbaik SINTA',
+          avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200'
+        },
+        date: '25 - 26 Maret 2026',
+        time: '09.00 - 16.30 WIB',
+        durationJp: 24,
+        method: 'Online (Zoom HD)',
+        quota: 50,
+        enrolled: 42,
+        price: 750000,
+        earlyBirdPrice: 490000,
+        bannerImage: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=700',
+        benefits: [
+          'Sertifikat 24 JP Terakreditasi Asosiasi Dosen',
+          'Checklist Standar Reviewer Elsevier & Springer',
+          'Grup Mentoring Naskah selama 30 Hari'
+        ]
+      },
+      {
+        id: 'train-003',
+        title: 'In-House Training: Tata Kelola OJS 3 Kampus & Percepatan Akreditasi SINTA',
+        category: 'In-House Kampus',
+        instructor: {
+          name: 'Ir. Hendra Gunawan, Ph.D. & Tim Konsultan Licyum',
+          role: 'Fasilitator Akreditasi Jurnal Nasional & Asesor SPMI',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200'
+        },
+        date: '10 - 12 April 2026',
+        time: '08.00 - 17.00 WIB (3 Hari)',
+        durationJp: 40,
+        method: 'Offline (Hotel Bintang 4)',
+        location: 'Yogyakarta / Di Kampus Mitra',
+        quota: 30,
+        enrolled: 18,
+        price: 2850000,
+        earlyBirdPrice: 2250000,
+        bannerImage: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80&w=700',
+        benefits: [
+          'Audit Langsung Sistem OJS 3 Kampus oleh Pakar',
+          'Roadmap Menuju SINTA 2 & DOAJ 2026',
+          'Pedoman Instrumen Akreditasi ARJUNA Terbaru'
+        ]
+      },
+      {
+        id: 'train-004',
+        title: 'Sertifikasi BNSP: Certified Educational Consultant & Instruktur Pelatihan Nasional',
+        category: 'Akreditasi',
+        instructor: {
+          name: 'Dr. Tri Wibowo, S.Pd., M.M., CBA.',
+          role: 'Master Asesor BNSP & Direktur LPK Licyum',
+          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200'
+        },
+        date: '22 - 24 April 2026',
+        time: '08.30 - 16.30 WIB',
+        durationJp: 36,
+        method: 'Hybrid',
+        location: 'Jakarta & Zoom Meeting',
+        quota: 25,
+        enrolled: 19,
+        price: 3450000,
+        earlyBirdPrice: 2950000,
+        bannerImage: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&fit=crop&q=80&w=700',
+        benefits: [
+          'Sertifikat Kompetensi Berlogo Garuda BNSP (Bila Lulus)',
+          'Sertifikat Pelatihan 36 JP Licyum Institute',
+          'Portofolio Standar Asesmen Siap Uji'
+        ]
+      }
+    ];
+
+    const VERIFIED_CERTIFICATES = {
+      'LCY-2024-EDU-092': {
+        certificateNumber: 'LCY-2024-EDU-092',
+        participantName: 'Dra. Endang Sulistyowati, M.Pd.',
+        programTitle: 'Pelatihan Penulisan Buku Ajar & Monograf Ber-ISBN Sesuai Standar BSNP',
+        institution: 'Universitas Negeri Semarang (UNNES)',
+        issueDate: '24 Oktober 2024',
+        grade: 'Sangat Memuaskan (A)',
+        jpTotal: 32,
+        status: 'VALID & TERVERIFIKASI',
+        credentialId: 'CRED-98231-LIC-2024'
+      },
+      'LCY-2024-JRN-108': {
+        certificateNumber: 'LCY-2024-JRN-108',
+        participantName: 'Dr. Ir. Raden Sukoco, M.T.',
+        programTitle: 'Workshop Intensif Menembus Jurnal Terindeks Scopus & SINTA 1-2',
+        institution: 'Institut Teknologi Sepuluh Nopember (ITS)',
+        issueDate: '15 November 2024',
+        grade: 'Dengan Pujian (Cum Laude / A+)',
+        jpTotal: 24,
+        status: 'VALID & TERVERIFIKASI',
+        credentialId: 'CRED-54129-LIC-2024'
+      },
+      'LCY-2024-WRK-415': {
+        certificateNumber: 'LCY-2024-WRK-415',
+        participantName: 'Ahmad Fauzi, S.Pd., M.Ed.',
+        programTitle: 'In-House Training: Integrasi AI Generatif dalam Pembelajaran Kampus Merdeka',
+        institution: 'Universitas Muhammadiyah Surakarta',
+        issueDate: '08 Desember 2024',
+        grade: 'Sangat Memuaskan (A)',
+        jpTotal: 32,
+        status: 'VALID & TERVERIFIKASI',
+        credentialId: 'CRED-77812-LIC-2024'
+      }
+    };
+
+    const STATUS_TRACKING_SAMPLES = {
+      'ISBN-9281-2024': {
+        trackingCode: 'ISBN-9281-2024',
+        type: 'ISBN',
+        title: 'Transformasi Digital dan Tata Kelola Sekolah Unggul',
+        applicant: 'Dr. Wahyu Pratama, M.Pd. (UNJ)',
+        submissionDate: '28 Oktober 2024',
+        currentStep: 'Penetapan Nomor ISBN & Barcode oleh Tim Perpusnas RI',
+        statusPercent: 85,
+        statusLabel: 'Disetujui Perpusnas',
+        notes: 'Draft final cover dan layout selesai divalidasi. Surat resmi ISBN sedang diterbitkan oleh Perpustakaan Nasional RI.'
+      },
+      'JRN-REV-304': {
+        trackingCode: 'JRN-REV-304',
+        type: 'NASKAH_JURNAL',
+        title: 'Penerapan Algoritma Deep Residual Learning pada Klasifikasi Spektrum Citra Medis',
+        applicant: 'Dian Permadi, S.Kom., M.Cs.',
+        submissionDate: '14 November 2024',
+        currentStep: 'Double-Blind Peer Review (2 Reviewer Bidang Informatika)',
+        statusPercent: 60,
+        statusLabel: 'Proses Review',
+        notes: 'Reviewer 1 telah mengirimkan catatan perbaikan minor. Menunggu ulasan Reviewer 2.'
+      },
+      'SRT-VER-882': {
+        trackingCode: 'SRT-VER-882',
+        type: 'SERTIFIKAT',
+        title: 'Sertifikat Pelatihan Penulisan Artikel Ilmiah 32 JP',
+        applicant: 'Siti Nurhaliza, M.Si.',
+        submissionDate: '02 Desember 2024',
+        currentStep: 'Verifikasi Tanda Tangan Digital & Nomor Registrasi Nasional',
+        statusPercent: 100,
+        statusLabel: 'Terbit & Final',
+        notes: 'Sertifikat resmi telah diterbitkan dan telah terdaftar pada database Licyum.'
+      }
+    };
+
+    const TESTIMONIALS = [
+      {
+        id: '1',
+        name: 'Prof. Dr. Ir. Suyanto, M.Eng.',
+        title: 'Guru Besar Teknik Elektro & Reviewer Jurnal',
+        institution: 'Universitas Diponegoro',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=200',
+        service: 'Penerbitan Buku',
+        content: 'Mengonversi riset disertasi menjadi buku referensi ber-ISBN di Licyum sangat memuaskan. Layoutnya rapi menangani rumus matematis rumit, pengurusan ISBN Perpusnas cepat, dan buku saya langsung dipasarkan profesional.'
+      },
+      {
+        id: '2',
+        name: 'Dr. Anindita Kusuma, M.Hum.',
+        title: 'Dosen Pendidikan Bahasa & Editor Jurnal',
+        institution: 'Universitas Negeri Yogyakarta',
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
+        service: 'Portal Jurnal OJS',
+        content: 'Proses peer-review di portal jurnal Licyum sangat transparan dan berstandar OJS kelas dunia. Catatan mitra bestari sangat konstruktif memperkaya naskah kami hingga akhirnya terbit dan terindeks SINTA 2.'
+      },
+      {
+        id: '3',
+        name: 'Drs. H. Mulyadi, M.M.',
+        title: 'Kepala Sekolah Penggerak & Ketua MKKS',
+        institution: 'SMA Negeri 1 Klaten',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
+        service: 'Pelatihan & Konsultasi',
+        content: 'Kami mengundang Licyum untuk in-house training penulisan karya ilmiah bagi 60 guru. Materinya sangat aplikatif, narasumber kredibel, dan sertifikat 32 JP-nya lengkap dengan nomor induk resmi.'
+      }
+    ];
+
+    function formatRupiah(num) {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+      }).format(num);
+    }
+
+    // --- MAIN REACT APP COMPONENT ---
+    function App() {
+      // Persistent Reactive Database State
+      const [booksData, setBooksData] = useState(() => {
+        try {
+          const s = localStorage.getItem('licyum_books');
+          return s ? JSON.parse(s) : BOOKS_DATA;
+        } catch { return BOOKS_DATA; }
+      });
+      const [articlesData, setArticlesData] = useState(() => {
+        try {
+          const s = localStorage.getItem('licyum_articles');
+          return s ? JSON.parse(s) : RECENT_ARTICLES;
+        } catch { return RECENT_ARTICLES; }
+      });
+      const [trainingsData, setTrainingsData] = useState(() => {
+        try {
+          const s = localStorage.getItem('licyum_trainings');
+          return s ? JSON.parse(s) : TRAINING_PROGRAMS;
+        } catch { return TRAINING_PROGRAMS; }
+      });
+      const [certificatesData, setCertificatesData] = useState(() => {
+        try {
+          const s = localStorage.getItem('licyum_certs');
+          return s ? JSON.parse(s) : VERIFIED_CERTIFICATES;
+        } catch { return VERIFIED_CERTIFICATES; }
+      });
+      const [trackingsData, setTrackingsData] = useState(() => {
+        try {
+          const s = localStorage.getItem('licyum_tracks');
+          return s ? JSON.parse(s) : STATUS_TRACKING_SAMPLES;
+        } catch { return STATUS_TRACKING_SAMPLES; }
+      });
+
+      const [activePillar, setActivePillar] = useState('all');
+      const [searchCategory, setSearchCategory] = useState('Semua');
+      const [searchQuery, setSearchQuery] = useState('');
+      const [bookCategory, setBookCategory] = useState('Semua');
+      const [journalTab, setJournalTab] = useState('all');
+
+      // Modals
+      const [adminModalOpen, setAdminModalOpen] = useState(false);
+      const [adminTab, setAdminTab] = useState('books');
+      const [adminNotice, setAdminNotice] = useState(null);
+
+      const [statusModalOpen, setStatusModalOpen] = useState(false);
+      const [statusDefaultTab, setStatusDefaultTab] = useState('ISBN');
+      const [statusInput, setStatusInput] = useState('ISBN-9281-2024');
+      const [statusResult, setStatusResult] = useState(() => trackingsData['ISBN-9281-2024']);
+      
+      const [selectedBook, setSelectedBook] = useState(null);
+      const [selectedArticle, setSelectedArticle] = useState(null);
+      const [selectedProgram, setSelectedProgram] = useState(null);
+      const [authModalOpen, setAuthModalOpen] = useState(false);
+      const [authMode, setAuthMode] = useState('login');
+
+      // Certificate Verification
+      const [certCodeInput, setCertCodeInput] = useState('LCY-2024-EDU-092');
+      const [certResult, setCertResult] = useState(null);
+      const [hasCheckedCert, setHasCheckedCert] = useState(false);
+
+      // Re-initialize Lucide Icons after render
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      const triggerNotice = (msg) => {
+        setAdminNotice(msg);
+        setTimeout(() => setAdminNotice(null), 3000);
+      };
+
+      // Filtered Books
+      const filteredBooks = useMemo(() => {
+        return booksData.filter((b) => {
+          const matchCat = bookCategory === 'Semua' || b.category === bookCategory;
+          const matchSearch =
+            searchQuery.trim() === '' ||
+            b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            b.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            b.isbn.includes(searchQuery);
+          return matchCat && matchSearch;
+        });
+      }, [bookCategory, searchQuery, booksData]);
+
+      // Filtered Articles
+      const filteredArticles = useMemo(() => {
+        return articlesData.filter((a) => {
+          const matchJrn = journalTab === 'all' || a.journalId === journalTab;
+          const matchSearch =
+            searchQuery.trim() === '' ||
+            a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            a.authors.some((au) => au.toLowerCase().includes(searchQuery.toLowerCase()));
+          return matchJrn && matchSearch;
+        });
+      }, [journalTab, searchQuery, articlesData]);
+
+      const handleCheckCertificate = (e) => {
+        e.preventDefault();
+        setHasCheckedCert(true);
+        const code = certCodeInput.trim().toUpperCase();
+        if (certificatesData[code]) {
+          setCertResult(certificatesData[code]);
+        } else if (code.startsWith('LCY')) {
+          setCertResult({
+            certificateNumber: code,
+            participantName: 'Peserta Terdaftar Licyum',
+            programTitle: 'Pelatihan Kompetensi Akademik & Penulisan Ilmiah',
+            institution: 'Perguruan Tinggi Indonesia',
+            issueDate: '10 Januari 2025',
+            grade: 'Sangat Baik (A)',
+            jpTotal: 32,
+            status: 'VALID & TERVERIFIKASI',
+            credentialId: 'CRED-9982-LIC-2025'
+          });
+        } else {
+          setCertResult(null);
+        }
+      };
+
+      const handleSearchStatus = (e) => {
+        e.preventDefault();
+        const code = statusInput.trim().toUpperCase();
+        if (trackingsData[code]) {
+          setStatusResult(trackingsData[code]);
+        } else {
+          setStatusResult({
+            trackingCode: code,
+            type: statusDefaultTab,
+            title: `Pelacakan Dokumen ${code}`,
+            applicant: 'Akademisi Terdaftar Licyum',
+            submissionDate: '15 Januari 2025',
+            currentStep: 'Proses Verifikasi Dokumen & Review Tim Redaksi',
+            statusPercent: 65,
+            statusLabel: 'Proses Review',
+            notes: 'Naskah/berkas sedang diproses sesuai ketentuan dan antrean sistem Licyum.'
+          });
+        }
+      };
+
+      const scrollToSection = (id) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col bg-white">
+          
+          {/* 1. TOP NOTICE BAR */}
+          {/* TOP ANNOUNCEMENT BAR: PORTAL RESMI KORPORASI */}
+          <div className="bg-[#0F2547] text-white text-xs py-2 px-4 border-b border-[#F5B041]/40 flex flex-wrap items-center justify-between gap-2 shadow-xs">
+            <div className="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#F5B041] animate-ping"></span>
+                <span className="font-semibold text-[#F5B041]">DESAIN BARU DIREKTORI KORPORAT:</span>
+                <span className="text-slate-200 hidden sm:inline">PT Licyum Cipta Akademika (Layout Vertikal Tunggal Formal)</span>
+              </div>
+              <a
+                href="./portal.html"
+                className="bg-[#F5B041] hover:bg-[#e5a030] text-[#0F2547] font-bold px-3 py-1 rounded text-xs inline-flex items-center gap-1 transition-all"
+              >
+                <span>Buka Portal Direktori Korporat ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="bg-[#0A192F] text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 text-amber-400 font-bold">
+                  <i data-lucide="shield-check" className="w-4 h-4"></i> Anggota Resmi IKAPI No. 612/DKI/2022
+                </span>
+                <span className="hidden md:inline text-slate-600">•</span>
+                <span className="hidden md:inline">Terakreditasi SINTA Kemdikbudristek & Terindeks DOAJ</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => {
+                    setStatusDefaultTab('ISBN');
+                    setStatusModalOpen(true);
+                  }}
+                  className="hover:text-amber-300 transition-colors flex items-center gap-1 font-medium"
+                >
+                  <i data-lucide="check-circle-2" className="w-3.5 h-3.5 text-emerald-400"></i> Cek Status ISBN / Naskah
+                </button>
+                <span className="text-slate-700">|</span>
+                <a
+                  href="https://wa.me/6281234567890"
+                  target="_blank"
+                  className="text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"
+                >
+                  <i data-lucide="phone-call" className="w-3.5 h-3.5"></i> Hotline: 0812-3456-7890
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* 2. STICKY NAVBAR */}
+          <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 py-3.5">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+              
+              {/* Brand Logo */}
+              <div
+                onClick={() => {
+                  setActivePillar('all');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex items-center gap-3 cursor-pointer group"
+              >
+                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#0F2850] to-[#1E3A8A] flex items-center justify-center text-amber-400 shadow-md group-hover:scale-105 transition-transform">
+                  <i data-lucide="book-open" className="w-6 h-6"></i>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-2xl font-black tracking-tight text-[#0F2850]">LICYUM</span>
+                    <span className="text-[10px] uppercase font-bold tracking-widest px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                      ID
+                    </span>
+                  </div>
+                  <p className="text-[11px] font-medium text-slate-500">
+                    Penerbitan • Jurnal Ilmiah • Pelatihan
+                  </p>
+                </div>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-700">
+                <button
+                  onClick={() => {
+                    setActivePillar('all');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="px-3 py-2 rounded-xl hover:text-[#0F2850] hover:bg-slate-100 transition-colors"
+                >
+                  Beranda
+                </button>
+
+                <div className="relative group">
+                  <button className="px-3 py-2 rounded-xl hover:text-[#0F2850] hover:bg-slate-100 transition-colors flex items-center gap-1">
+                    <span>Layanan Kami</span>
+                    <i data-lucide="chevron-down" className="w-4 h-4 text-slate-400"></i>
+                  </button>
+                  <div className="absolute top-full left-0 w-72 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 hidden group-hover:block animate-fadeIn">
+                    <button
+                      onClick={() => {
+                        setActivePillar('publishing');
+                        scrollToSection('seksi-penerbitan');
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-blue-50 flex items-center gap-3"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#0F2850] flex items-center justify-center">
+                        <i data-lucide="book" className="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Penerbitan & Toko Buku</div>
+                        <div className="text-[11px] text-slate-500">ISBN & HAKI Kemenkumham</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActivePillar('journal');
+                        scrollToSection('seksi-jurnal');
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-emerald-50 flex items-center gap-3"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                        <i data-lucide="file-text" className="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Portal Jurnal Ilmiah (OJS)</div>
+                        <div className="text-[11px] text-slate-500">SINTA 2-4 & DOAJ Indexed</div>
+                      </div>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActivePillar('training');
+                        scrollToSection('seksi-pelatihan');
+                      }}
+                      className="w-full text-left p-2.5 rounded-xl hover:bg-amber-50 flex items-center gap-3"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                        <i data-lucide="graduation-cap" className="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-900">Pelatihan & Konsultan</div>
+                        <div className="text-[11px] text-slate-500">Workshop 32 JP & BNSP</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => scrollToSection('tentang-kami')}
+                  className="px-3 py-2 rounded-xl hover:text-[#0F2850] hover:bg-slate-100 transition-colors"
+                >
+                  Tentang Kami
+                </button>
+
+                <button
+                  onClick={() => {
+                    setStatusDefaultTab('ISBN');
+                    setStatusModalOpen(true);
+                  }}
+                  className="px-3 py-2 rounded-xl hover:text-[#0F2850] hover:bg-slate-100 transition-colors flex items-center gap-1.5"
+                >
+                  <span>Cek Status</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                </button>
+
+                <button
+                  onClick={() => scrollToSection('seksi-kontak')}
+                  className="px-3 py-2 rounded-xl hover:text-[#0F2850] hover:bg-slate-100 transition-colors"
+                >
+                  Kontak
+                </button>
+              </nav>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5">
+                <button
+                  onClick={() => setAdminModalOpen(true)}
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-black text-slate-950 bg-amber-400 hover:bg-amber-500 rounded-xl transition-all shadow-md hover:shadow-lg"
+                  title="Pusat Manajemen CRUD & Database Ekosistem"
+                >
+                  <i data-lucide="database" className="w-4 h-4 text-slate-950"></i>
+                  <span>CRUD Admin</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setStatusDefaultTab('SERTIFIKAT');
+                    setStatusModalOpen(true);
+                  }}
+                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors border border-slate-200"
+                >
+                  <i data-lucide="award" className="w-4 h-4 text-emerald-600"></i>
+                  <span>Verifikasi Sertifikat</span>
+                </button>
+
+                <button
+                  onClick={() => setAuthModalOpen(true)}
+                  className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center gap-2"
+                >
+                  <i data-lucide="log-in" className="w-4 h-4"></i>
+                  <span>Masuk / Daftar</span>
+                </button>
+              </div>
+
+            </div>
+          </header>
+
+          {/* 3. HERO SECTION & UNIFIED DASHBOARD SWITCHER (INTI UTAMA) */}
+          <section className="relative overflow-hidden bg-gradient-to-b from-[#0A192F] via-[#0F2850] to-[#143265] text-white pt-14 pb-20 sm:pb-24">
+            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none"></div>
+
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              
+              {/* Badge */}
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-semibold text-amber-300 mb-6 shadow-sm">
+                <i data-lucide="sparkles" className="w-4 h-4 text-amber-400"></i>
+                <span>Platform Terpadu Publikasi Ilmiah & Pendidikan Tinggi Indonesia</span>
+              </div>
+
+              {/* Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight max-w-4xl mx-auto mb-6">
+                Satu Ekosistem untuk{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500">
+                  Publikasi Buku
+                </span>
+                ,{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-blue-300 to-indigo-300">
+                  Jurnal Ilmiah
+                </span>
+                , dan{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-teal-300 to-emerald-400">
+                  Pengembangan Kompetensi
+                </span>
+              </h1>
+
+              <p className="text-sm sm:text-lg text-slate-300 max-w-3xl mx-auto font-normal leading-relaxed mb-8">
+                Solusi komprehensif bagi dosen, peneliti, guru, mahasiswa, dan perguruan tinggi untuk menerbitkan buku ber-ISBN resmi, mempublikasikan naskah di e-journal terakreditasi SINTA & DOAJ, serta meningkatkan profesionalisme melalui pelatihan ber-SKP 32-40 JP.
+              </p>
+
+              {/* UNIFIED SEARCH BAR */}
+              <div className="max-w-3xl mx-auto bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl shadow-2xl border border-white/20 text-left">
+                
+                {/* Category Pills */}
+                <div className="flex items-center gap-1.5 pb-2 mb-2 border-b border-slate-200 text-xs overflow-x-auto">
+                  <span className="text-slate-400 font-bold px-2 uppercase text-[10px] tracking-wider">
+                    Filter:
+                  </span>
+                  {['Semua', 'Buku', 'Artikel Jurnal', 'Program Pelatihan'].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        setSearchCategory(cat);
+                        if (cat === 'Buku') setActivePillar('publishing');
+                        else if (cat === 'Artikel Jurnal') setActivePillar('journal');
+                        else if (cat === 'Program Pelatihan') setActivePillar('training');
+                        else setActivePillar('all');
+                      }}
+                      className={`px-3 py-1.5 rounded-lg font-bold transition-all whitespace-nowrap ${
+                        searchCategory === cat
+                          ? 'bg-[#0F2850] text-white shadow-sm'
+                          : 'text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Input & Search CTA */}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <i data-lucide="search" className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={
+                        searchCategory === 'Buku'
+                          ? 'Cari judul buku, penulis, atau ISBN (contoh: Metodologi, Tesis)...'
+                          : searchCategory === 'Artikel Jurnal'
+                          ? 'Cari judul naskah jurnal, penulis, atau DOI...'
+                          : searchCategory === 'Program Pelatihan'
+                          ? 'Cari workshop penulisan, pelatihan OJS, atau sertifikasi BNSP...'
+                          : 'Ketik kata kunci untuk mencari di seluruh katalog buku, jurnal & pelatihan...'
+                      }
+                      className="w-full pl-11 pr-4 py-3 text-sm sm:text-base text-slate-900 placeholder-slate-400 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#0F2850]"
+                    />
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      if (searchCategory === 'Buku') scrollToSection('seksi-penerbitan');
+                      else if (searchCategory === 'Artikel Jurnal') scrollToSection('seksi-jurnal');
+                      else if (searchCategory === 'Program Pelatihan') scrollToSection('seksi-pelatihan');
+                      else scrollToSection('seksi-penerbitan');
+                    }}
+                    className="py-3 px-6 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-sm sm:text-base rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                  >
+                    <span>Cari Sekarang</span>
+                    <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                  </button>
+                </div>
+
+              </div>
+
+              {/* Trending Tags */}
+              <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-300">
+                <span className="text-slate-400 font-medium">Kata Kunci Populer:</span>
+                {['Metodologi Kualitatif', 'Jurnal SINTA 2', 'Scopus & IMRaD', 'ISBN Cepat', 'Turnitin'].map((chip) => (
+                  <button
+                    key={chip}
+                    onClick={() => setSearchQuery(chip)}
+                    className="px-2.5 py-1 rounded-md bg-white/10 hover:bg-white/20 text-slate-200 border border-white/10"
+                  >
+                    {chip}
+                  </button>
+                ))}
+              </div>
+
+            </div>
+          </section>
+
+          {/* 4. "3-PILLAR INTERACTIVE FEATURE HUB" */}
+          <div className="relative -mt-10 z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            
+            {/* Filter Bar */}
+            <div className="flex flex-col sm:flex-row items-center justify-between bg-white rounded-2xl p-4 shadow-xl border border-slate-200 mb-6 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#0F2850] text-amber-400 flex items-center justify-center font-bold">
+                  <i data-lucide="layers" className="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">3-Pillar Interactive Feature Hub</h3>
+                  <p className="text-xs text-slate-500">Pilih pilar di bawah untuk memfokuskan konten atau klik navigasi cepat</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+                <button
+                  onClick={() => setActivePillar('all')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    activePillar === 'all' ? 'bg-white text-[#0F2850] shadow-sm' : 'text-slate-600'
+                  }`}
+                >
+                  Semua Fitur
+                </button>
+                <button
+                  onClick={() => {
+                    setActivePillar('publishing');
+                    scrollToSection('seksi-penerbitan');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    activePillar === 'publishing' ? 'bg-[#0F2850] text-white shadow-sm' : 'text-slate-600'
+                  }`}
+                >
+                  1. Buku
+                </button>
+                <button
+                  onClick={() => {
+                    setActivePillar('journal');
+                    scrollToSection('seksi-jurnal');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    activePillar === 'journal' ? 'bg-emerald-700 text-white shadow-sm' : 'text-slate-600'
+                  }`}
+                >
+                  2. Jurnal OJS
+                </button>
+                <button
+                  onClick={() => {
+                    setActivePillar('training');
+                    scrollToSection('seksi-pelatihan');
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${
+                    activePillar === 'training' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-600'
+                  }`}
+                >
+                  3. Pelatihan
+                </button>
+              </div>
+            </div>
+
+            {/* 3 Large Interactive Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Pilar 1 */}
+              <div
+                onClick={() => {
+                  setActivePillar('publishing');
+                  scrollToSection('seksi-penerbitan');
+                }}
+                className={`bg-white rounded-3xl p-6 sm:p-7 border transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  activePillar === 'publishing'
+                    ? 'border-2 border-[#0F2850] ring-4 ring-blue-500/10 shadow-2xl bg-gradient-to-b from-blue-50/40 to-white'
+                    : 'border-slate-200/90 shadow-md hover:shadow-xl hover:border-blue-400'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-blue-100 text-[#0F2850] border border-blue-200">
+                      Anggota Resmi IKAPI
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#0F2850] flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <i data-lucide="book-open" className="w-6 h-6"></i>
+                    </div>
+                  </div>
+
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Gaya: Penerbit KBM
+                  </span>
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-[#0F2850] mt-0.5 mb-1.5">
+                    Penerbitan & Toko Buku
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium mb-4">
+                    Paket Terbit Lengkap, ISBN & Barcode Perpusnas, Hak Cipta HAKI, dan Royalti Penulis 100%.
+                  </p>
+
+                  <ul className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-6">
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Paket Mandiri, Silver & Mahakarya</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Konversi Tugas Akhir ke Buku Ber-ISBN</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Toko Buku Online Se-Nusantara</li>
+                  </ul>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#0F2850]">
+                  <span className="text-slate-500 font-semibold">1.480+ Judul Terbit</span>
+                  <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    Buka Penerbitan <i data-lucide="arrow-right" className="w-3.5 h-3.5"></i>
+                  </span>
+                </div>
+              </div>
+
+              {/* Pilar 2 */}
+              <div
+                onClick={() => {
+                  setActivePillar('journal');
+                  scrollToSection('seksi-jurnal');
+                }}
+                className={`bg-white rounded-3xl p-6 sm:p-7 border transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  activePillar === 'journal'
+                    ? 'border-2 border-emerald-600 ring-4 ring-emerald-500/10 shadow-2xl bg-gradient-to-b from-emerald-50/40 to-white'
+                    : 'border-slate-200/90 shadow-md hover:shadow-xl hover:border-emerald-400'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-200">
+                      SINTA 2-4 & DOAJ
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <i data-lucide="file-spreadsheet" className="w-6 h-6"></i>
+                    </div>
+                  </div>
+
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Gaya: OJS E-Journal
+                  </span>
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-emerald-800 mt-0.5 mb-1.5">
+                    Portal Jurnal Ilmiah (OJS)
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium mb-4">
+                    Repositori artikel saintifik bereputasi dengan peer-review transparan dan terindeks Crossref DOI.
+                  </p>
+
+                  <ul className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-6">
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> 4 Berkala Ilmiah Aktif Terakreditasi</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Unduh Full-Text PDF & Metadata Sitasi</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Layanan Cek Turnitin & Author Guidelines</li>
+                  </ul>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-800">
+                  <span className="text-slate-500 font-semibold">920+ Paper Terpublikasi</span>
+                  <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    Buka E-Journal <i data-lucide="arrow-right" className="w-3.5 h-3.5"></i>
+                  </span>
+                </div>
+              </div>
+
+              {/* Pilar 3 */}
+              <div
+                onClick={() => {
+                  setActivePillar('training');
+                  scrollToSection('seksi-pelatihan');
+                }}
+                className={`bg-white rounded-3xl p-6 sm:p-7 border transition-all duration-300 cursor-pointer flex flex-col justify-between group relative overflow-hidden ${
+                  activePillar === 'training'
+                    ? 'border-2 border-amber-500 ring-4 ring-amber-500/10 shadow-2xl bg-gradient-to-b from-amber-50/40 to-white'
+                    : 'border-slate-200/90 shadow-md hover:shadow-xl hover:border-amber-400'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                      Bersertifikat 32-40 JP
+                    </span>
+                    <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <i data-lucide="graduation-cap" className="w-6 h-6"></i>
+                    </div>
+                  </div>
+
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    Gaya: Kuanta.id Edukasi
+                  </span>
+                  <h3 className="text-xl font-black text-slate-900 group-hover:text-amber-800 mt-0.5 mb-1.5">
+                    Pelatihan & Konsultan Kampus
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-600 font-medium mb-4">
+                    Workshop penulisan Scopus, in-house training sekolah/kampus, dan sertifikasi BNSP resmi.
+                  </p>
+
+                  <ul className="space-y-1.5 border-t border-slate-100 pt-3 text-xs text-slate-600 mb-6">
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Masterclass Scopus Q1 & Buku Ajar</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Pendampingan Akreditasi Program Studi</li>
+                    <li className="flex items-center gap-1.5"><i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600"></i> Cek & Unduh Sertifikat Real-Time</li>
+                  </ul>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-800">
+                  <span className="text-slate-500 font-semibold">34.500+ Alumni Peserta</span>
+                  <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                    Buka Jadwal Pelatihan <i data-lucide="arrow-right" className="w-3.5 h-3.5"></i>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+          {/* 5. SEKSI FITUR 1: PENERBITAN & TOKO BUKU (Penerbit KBM Style) */}
+          {(activePillar === 'all' || activePillar === 'publishing') && (
+            <section id="seksi-penerbitan" className="py-20 bg-slate-50/70 border-t border-slate-200 mt-16 scroll-mt-20">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-[#0F2850] text-xs font-bold uppercase tracking-wider mb-2">
+                      <i data-lucide="book" className="w-3.5 h-3.5"></i> Pilar 1: Penerbitan & Toko Buku
+                    </div>
+                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                      Penerbitan Buku Ber-ISBN Resmi & Katalog Toko Buku
+                    </h2>
+                    <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-2xl">
+                      Menerbitkan naskah ilmiah, buku referensi, monograf, dan konversi tugas akhir dengan royalti 100%, legalitas HAKI resmi, serta distribusi buku se-Indonesia.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs font-bold text-slate-600 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm self-start">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span>Anggota Resmi IKAPI No. 612/DKI/2022</span>
+                  </div>
+                </div>
+
+                {/* Sub-menu layanan cepat (3 cards) */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                  {PUBLISHING_SERVICES.map((srv) => (
+                    <div key={srv.id} className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#0F2850] flex items-center justify-center font-bold">
+                            <i data-lucide="book-marked" className="w-6 h-6"></i>
+                          </div>
+                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                            {srv.badge}
+                          </span>
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">{srv.title}</h3>
+                        <p className="text-xs font-semibold text-amber-700 mb-2">{srv.subtitle}</p>
+                        <p className="text-xs text-slate-600 leading-relaxed mb-4">{srv.description}</p>
+                        
+                        {srv.packages && (
+                          <div className="grid grid-cols-3 gap-1.5 text-center text-xs mb-4">
+                            {srv.packages.map((pkg, i) => (
+                              <div key={i} className={`p-1.5 rounded-xl border ${pkg.popular ? 'bg-blue-50 border-blue-300 font-bold text-[#0F2850]' : 'bg-slate-50 border-slate-200'}`}>
+                                <div className="text-[10px]">{pkg.name}</div>
+                                <div className="text-[11px] font-black text-amber-700">{pkg.price.split(' ')[1]}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {srv.highlights && (
+                          <ul className="space-y-1.5 text-xs text-slate-600 mb-4">
+                            {srv.highlights.map((h, i) => (
+                              <li key={i} className="flex items-start gap-1.5">
+                                <i data-lucide="check" className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5"></i>
+                                <span>{h}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          const text = `Halo Penerbit Licyum, saya tertarik konsultasi layanan ${srv.title}.`;
+                          window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(text)}`, '_blank');
+                        }}
+                        className="w-full py-2.5 bg-slate-900 hover:bg-[#0F2850] text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        <span>Konsultasi & Ajukan Naskah</span>
+                        <i data-lucide="arrow-right" className="w-3.5 h-3.5"></i>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Katalog Buku Terbaru (Grid 4 Kolom) */}
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-slate-100">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-black text-slate-900">
+                        Katalog Buku Akademik Terbaru
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-500">
+                        Koleksi buku ajar, referensi, dan monograf ber-ISBN resmi siap dipesan.
+                      </p>
+                    </div>
+
+                    {/* Filter categories */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto text-xs font-bold">
+                      {['Semua', 'Pendidikan', 'Teknologi & AI', 'Hukum', 'Manajemen & Bisnis', 'Kesehatan & Medis', 'Sosial Humaniora'].map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => setBookCategory(c)}
+                          className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition-all ${
+                            bookCategory === c ? 'bg-[#0F2850] text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Books 4-column Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {filteredBooks.map((book) => {
+                      const discount = Math.round(((book.originalPrice - book.price) / book.originalPrice) * 100);
+
+                      return (
+                        <div key={book.id} className="bg-white rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1">
+                          
+                          {/* Cover */}
+                          <div
+                            onClick={() => setSelectedBook(book)}
+                            className="relative bg-slate-100 h-64 overflow-hidden cursor-pointer flex items-center justify-center p-4"
+                          >
+                            <img
+                              src={book.coverUrl}
+                              alt={book.title}
+                              className="h-full object-cover rounded-lg shadow-md group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <span className="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-bold bg-[#0F2850] text-white shadow-sm">
+                              {book.category}
+                            </span>
+                            {discount > 0 && (
+                              <span className="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-black bg-rose-500 text-white shadow-sm">
+                                -{discount}%
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Info */}
+                          <div className="p-4 flex-1 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center gap-1 text-xs text-amber-500 mb-1">
+                                <i data-lucide="star" className="w-3.5 h-3.5 fill-amber-400"></i>
+                                <span className="font-bold text-slate-800">{book.rating}</span>
+                                <span className="text-slate-400 text-[11px]">({book.reviewsCount} ulasan)</span>
+                                <span className="ml-auto text-[10px] text-slate-400 font-mono">{book.pages} Hal</span>
+                              </div>
+
+                              <h4
+                                onClick={() => setSelectedBook(book)}
+                                className="font-bold text-slate-900 text-sm leading-snug line-clamp-2 hover:text-[#0F2850] cursor-pointer mb-1"
+                              >
+                                {book.title}
+                              </h4>
+                              <p className="text-xs text-slate-600 line-clamp-1 mb-2">{book.author}</p>
+                              
+                              <div className="text-[10px] text-slate-400 font-mono bg-slate-50 p-1.5 rounded border border-slate-100 flex items-center justify-between mb-3">
+                                <span>ISBN: {book.isbn}</span>
+                                <span>{book.year}</span>
+                              </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-100">
+                              <div className="flex items-baseline gap-2 mb-3">
+                                <span className="text-base font-extrabold text-[#0F2850]">{formatRupiah(book.price)}</span>
+                                <span className="text-xs text-slate-400 line-through">{formatRupiah(book.originalPrice)}</span>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <button
+                                  onClick={() => setSelectedBook(book)}
+                                  className="py-2 px-2.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs hover:bg-slate-100 transition-colors"
+                                >
+                                  Detail
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    const msg = `Halo Licyum, saya ingin memesan buku: "${book.title}" (ISBN: ${book.isbn}).`;
+                                    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+                                  }}
+                                  className="py-2 px-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs transition-colors flex items-center justify-center gap-1 shadow-sm"
+                                >
+                                  <i data-lucide="shopping-cart" className="w-3.5 h-3.5"></i>
+                                  <span>Beli</span>
+                                </button>
+                              </div>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                </div>
+
+              </div>
+            </section>
+          )}
+
+          {/* 6. SEKSI FITUR 2: PORTAL JURNAL ILMIAH (OJS Style) */}
+          {(activePillar === 'all' || activePillar === 'journal') && (
+            <section id="seksi-jurnal" className="py-20 bg-white border-t border-slate-200 scroll-mt-20">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold uppercase tracking-wider mb-2">
+                      <i data-lucide="file-spreadsheet" className="w-3.5 h-3.5"></i> Pilar 2: Portal Jurnal Ilmiah
+                    </div>
+                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                      Portal E-Journal OJS Terakreditasi SINTA & DOAJ
+                    </h2>
+                    <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-2xl">
+                      Inspirasi repositori Open Journal Systems (OJS). Mempublikasikan karya ilmiah orisinal ber-DOI Crossref aktif dengan double-blind peer review berstandar tinggi.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const msg = `Halo Redaksi Jurnal Licyum, saya ingin mengirimkan naskah artikel ilmiah untuk target jurnal SINTA.`;
+                      window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+                    }}
+                    className="px-5 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 self-start"
+                  >
+                    <i data-lucide="send" className="w-4 h-4"></i>
+                    <span>Submit Artikel (OJS)</span>
+                  </button>
+                </div>
+
+                {/* 1. Daftar Jurnal yang Dikelola (Horizontal Cards) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16">
+                  {JOURNALS_DATA.map((j) => (
+                    <div key={j.id} className="bg-slate-50/80 rounded-3xl p-5 border border-slate-200 hover:border-emerald-500 hover:shadow-lg transition-all flex flex-col sm:flex-row gap-5">
+                      <div className="w-full sm:w-36 h-48 sm:h-auto rounded-2xl overflow-hidden shrink-0 relative bg-slate-200 shadow-inner">
+                        <img src={j.coverImage} alt={j.name} className="w-full h-full object-cover" />
+                        <span className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-sm">
+                          {j.sintaBadge}
+                        </span>
+                      </div>
+
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 mb-1">
+                            <span className="bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">{j.acronym}</span>
+                            <span className="text-[11px] text-slate-500 font-normal">{j.frequency}</span>
+                          </div>
+                          <h4 className="font-extrabold text-slate-900 text-sm sm:text-base leading-snug mb-1">
+                            {j.name}
+                          </h4>
+                          <p className="text-xs text-slate-500 mb-2"><strong>Bidang:</strong> {j.fieldOfStudy}</p>
+                          <div className="text-[11px] font-mono text-slate-600 bg-white p-2 rounded-xl border border-slate-200 space-y-0.5 mb-3">
+                            <div>e-ISSN: {j.eIssn} | p-ISSN: {j.pIssn}</div>
+                            <div className="truncate font-sans text-slate-500">Editor: {j.editorInChief}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                          <button
+                            onClick={() => {
+                              const msg = `Halo Editor ${j.acronym}, saya ingin submit artikel di ${j.name}.`;
+                              window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+                            }}
+                            className="flex-1 py-2 px-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <span>Submit Naskah</span>
+                            <i data-lucide="arrow-up-right" className="w-3.5 h-3.5"></i>
+                          </button>
+                          <button
+                            onClick={() => setJournalTab(j.id)}
+                            className="py-2 px-3 bg-white hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-300"
+                          >
+                            Arsip
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* 2. Daftar Artikel Terbaru & Sidebar Informasi Penulis */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                  
+                  {/* Kolom Kiri: Artikel Terbaru */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                      <div>
+                        <h3 className="text-xl font-bold text-slate-900">Artikel Ilmiah Terbaru</h3>
+                        <p className="text-xs text-slate-500">Terbitan mutakhir ber-DOI resmi Open Access (CC BY 4.0).</p>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <button
+                          onClick={() => setJournalTab('all')}
+                          className={`px-2.5 py-1 rounded-lg font-bold ${journalTab === 'all' ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600'}`}
+                        >
+                          Semua
+                        </button>
+                        {['ljet', 'jist', 'lser', 'jkpt'].map((id) => (
+                          <button
+                            key={id}
+                            onClick={() => setJournalTab(id)}
+                            className={`px-2.5 py-1 rounded-lg font-bold uppercase ${journalTab === id ? 'bg-emerald-800 text-white' : 'bg-slate-100 text-slate-600'}`}
+                          >
+                            {id}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {filteredArticles.map((art) => (
+                      <div key={art.id} className="bg-white rounded-2xl p-5 border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all">
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 mb-2">
+                          <span className="font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                            {art.journalName}
+                          </span>
+                          <span>{art.volume}</span>
+                        </div>
+
+                        <h4
+                          onClick={() => setSelectedArticle(art)}
+                          className="text-base sm:text-lg font-bold text-slate-900 hover:text-emerald-800 cursor-pointer mb-2"
+                        >
+                          {art.title}
+                        </h4>
+                        <div className="text-xs text-slate-600 mb-2 font-semibold">
+                          {art.authors.join(', ')} • <span className="font-normal text-slate-400">{art.affiliation}</span>
+                        </div>
+                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">{art.abstract}</p>
+
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-slate-600">
+                              DOI: {art.doi}
+                            </span>
+                            <span className="text-slate-500 font-medium">• {art.citations} Sitasi</span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => setSelectedArticle(art)}
+                              className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold"
+                            >
+                              Abstrak
+                            </button>
+                            <button
+                              onClick={() => alert(`Mengunduh PDF: "${art.title}"...`)}
+                              className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white font-bold flex items-center gap-1.5 shadow-sm"
+                            >
+                              <i data-lucide="download" className="w-3.5 h-3.5"></i>
+                              <span>Unduh PDF</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Kolom Kanan: Quick Box Penulis */}
+                  <div className="space-y-6">
+                    <div className="bg-[#0F2850] text-white rounded-3xl p-6 shadow-md space-y-4">
+                      <div className="flex items-center gap-2.5">
+                        <i data-lucide="book-check" className="w-6 h-6 text-amber-400"></i>
+                        <h4 className="text-base font-bold text-white">Informasi Penting Penulis</h4>
+                      </div>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Sebelum submit artikel, pastikan naskah Anda memenuhi panduan etika publikasi ilmiah OJS Licyum.
+                      </p>
+                      <div className="space-y-2">
+                        <button
+                          onClick={() => alert('Panduan Penulis: Format IMRaD, Turnitin <20%, referensi APA 7th ed.')}
+                          className="w-full py-2.5 px-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-white flex items-center justify-between"
+                        >
+                          <span>Panduan Penulis (Author Guidelines)</span>
+                          <i data-lucide="chevron-right" className="w-4 h-4"></i>
+                        </button>
+                        <button
+                          onClick={() => alert('Template Word (.DOCX) berhasil diunduh.')}
+                          className="w-full py-2.5 px-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-white flex items-center justify-between"
+                        >
+                          <span>Download Template Word (.DOCX)</span>
+                          <i data-lucide="download" className="w-4 h-4"></i>
+                        </button>
+                        <button
+                          onClick={() => alert('Template LaTeX (.ZIP) berhasil diunduh.')}
+                          className="w-full py-2.5 px-3 bg-white/10 hover:bg-white/20 rounded-xl text-xs font-semibold text-white flex items-center justify-between"
+                        >
+                          <span>Download Template LaTeX (.ZIP)</span>
+                          <i data-lucide="download" className="w-4 h-4"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Turnitin Box */}
+                    <div className="bg-amber-50/80 border border-amber-200 rounded-3xl p-5">
+                      <div className="flex items-center gap-2 mb-2">
+                        <i data-lucide="shield-alert" className="w-5 h-5 text-amber-700"></i>
+                        <h4 className="text-sm font-bold text-amber-950">Cek Turnitin & Proofreading</h4>
+                      </div>
+                      <p className="text-xs text-amber-900 leading-relaxed mb-3">
+                        Uji kemiripan naskah akun No-Repository resmi (tidak masuk database). Hasil instan dalam 30 menit.
+                      </p>
+                      <button
+                        onClick={() => window.open('https://wa.me/6281234567890?text=Halo%20Licyum,%20saya%20mau%20cek%20Turnitin', '_blank')}
+                        className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-colors"
+                      >
+                        Cek Plagiasi Turnitin (Rp 25.000)
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+            </section>
+          )}
+
+          {/* 7. SEKSI FITUR 3: PELATIHAN & KONSULTAN PENDIDIKAN (Kuanta.id Style) */}
+          {(activePillar === 'all' || activePillar === 'training') && (
+            <section id="seksi-pelatihan" className="py-20 bg-slate-50/70 border-t border-slate-200 scroll-mt-20">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+                  <div>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider mb-2">
+                      <i data-lucide="graduation-cap" className="w-3.5 h-3.5"></i> Pilar 3: Pelatihan & Konsultan Pendidikan
+                    </div>
+                    <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
+                      Pengembangan Kompetensi Dosen, Guru & Institusi
+                    </h2>
+                    <p className="text-sm sm:text-base text-slate-600 mt-2 max-w-2xl">
+                      Inspirasi pendekatan korporat edukasi ala Kuanta.id. Workshop penulisan buku, tembus Scopus, in-house training kampus bersertifikat 32 JP, serta sertifikasi BNSP resmi.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const msg = `Halo Licyum, kampus kami ingin mengajukan in-house training.`;
+                      window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+                    }}
+                    className="px-5 py-2.5 bg-slate-900 hover:bg-[#0F2850] text-white rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all flex items-center gap-2 self-start"
+                  >
+                    <i data-lucide="building-2" className="w-4 h-4 text-amber-400"></i>
+                    <span>In-House Training Kampus</span>
+                  </button>
+                </div>
+
+                {/* 3 Banner Program Unggulan */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+                  <div className="bg-[#0F2850] text-white rounded-3xl p-6 shadow-md flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 flex items-center justify-center mb-3">
+                        <i data-lucide="book-open" className="w-5 h-5"></i>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase text-amber-400 tracking-wider">Program Dosen</span>
+                      <h3 className="text-lg font-bold mt-1 mb-2">Pelatihan Penulisan Buku & Jurnal Scopus</h3>
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        Pendampingan outline, IMRaD berbobot, respon reviewer, hingga naskah terbit untuk BKD / kenaikan pangkat.
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-white/10 text-xs font-bold text-amber-300 flex items-center justify-between">
+                      <span>Sertifikat 32 JP</span>
+                      <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-blue-100 text-[#0F2850] flex items-center justify-center mb-3">
+                        <i data-lucide="building-2" className="w-5 h-5"></i>
+                      </div>
+                      <span className="text-[10px] font-bold uppercase text-blue-600 tracking-wider">Program Kampus & Sekolah</span>
+                      <h3 className="text-lg font-bold text-slate-900 mt-1 mb-2">In-House Training & Akreditasi</h3>
+                      <p className="text-xs text-slate-600 leading-relaxed mb-4">
+                        Pelatihan OJS 3 terakreditasi ARJUNA, iklim riset dosen, dan PTK sekolah penggerak di kampus mitra.
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-slate-100 text-xs font-bold text-[#0F2850] flex items-center justify-between">
+                      <span>MOU Kemitraan Kampus</span>
+                      <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 rounded-3xl p-6 shadow-md flex flex-col justify-between">
+                    <div>
+                      <div className="w-10 h-10 rounded-xl bg-black/10 text-slate-950 flex items-center justify-center mb-3">
+                        <i data-lucide="award" className="w-5 h-5"></i>
+                      </div>
+                      <span className="text-[10px] font-black uppercase text-slate-950 tracking-wider">Sertifikasi Profesi</span>
+                      <h3 className="text-lg font-black mt-1 mb-2">Sertifikasi BNSP Instruktur & Konsultan</h3>
+                      <p className="text-xs text-slate-950 font-medium leading-relaxed mb-4">
+                        Uji kompetensi resmi berstandar Badan Nasional Sertifikasi Profesi (BNSP) berlogo Garuda.
+                      </p>
+                    </div>
+                    <div className="pt-3 border-t border-slate-950/10 text-xs font-black text-slate-950 flex items-center justify-between">
+                      <span>Sertifikat Berlogo Garuda BNSP</span>
+                      <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Jadwal Pelatihan Terdekat */}
+                <div className="mb-16">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h3 className="text-xl sm:text-2xl font-black text-slate-900">Jadwal Pelatihan & Workshop Terdekat</h3>
+                      <p className="text-xs text-slate-500">Pilih program untuk meningkatkan portofolio dan kompetensi Anda.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {trainingsData.map((prog) => {
+                      const remaining = prog.quota - prog.enrolled;
+                      const percent = Math.round((prog.enrolled / prog.quota) * 100);
+
+                      return (
+                        <div key={prog.id} className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all flex flex-col justify-between">
+                          <div className="relative h-44 overflow-hidden bg-slate-900">
+                            <img src={prog.bannerImage} alt={prog.title} className="w-full h-full object-cover opacity-90" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                            
+                            <div className="absolute top-3 left-3 right-3 flex items-center justify-between text-xs">
+                              <span className="px-2.5 py-1 rounded-full font-bold bg-[#0F2850]/90 text-white">
+                                {prog.category}
+                              </span>
+                              <span className="px-2.5 py-1 rounded-full font-black bg-amber-400 text-slate-950">
+                                {prog.durationJp} JP
+                              </span>
+                            </div>
+
+                            <div className="absolute bottom-3 left-3 text-xs text-white font-semibold flex items-center gap-1.5 bg-black/60 px-2.5 py-1 rounded-lg">
+                              <i data-lucide="map-pin" className="w-3.5 h-3.5 text-amber-400"></i>
+                              <span>{prog.method}</span>
+                            </div>
+                          </div>
+
+                          <div className="p-6 flex-1 flex flex-col justify-between">
+                            <div>
+                              <div className="text-xs text-slate-500 flex items-center gap-2 mb-2 font-semibold">
+                                <i data-lucide="calendar" className="w-3.5 h-3.5 text-amber-600"></i>
+                                <span>{prog.date}</span>
+                                <span>•</span>
+                                <span>{prog.time}</span>
+                              </div>
+
+                              <h4
+                                onClick={() => setSelectedProgram(prog)}
+                                className="font-bold text-slate-900 text-base leading-snug hover:text-[#0F2850] cursor-pointer mb-3"
+                              >
+                                {prog.title}
+                              </h4>
+
+                              <div className="flex items-center gap-3 bg-slate-50 p-2.5 rounded-2xl border border-slate-100 mb-4">
+                                <img src={prog.instructor.avatar} className="w-9 h-9 rounded-full object-cover border border-amber-300" />
+                                <div className="text-xs">
+                                  <div className="font-bold text-slate-900">{prog.instructor.name}</div>
+                                  <div className="text-slate-500 text-[11px] truncate">{prog.instructor.role}</div>
+                                </div>
+                              </div>
+
+                              {/* Quota bar */}
+                              <div className="mb-4">
+                                <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1">
+                                  <span>Terisi: {prog.enrolled} / {prog.quota} kursi</span>
+                                  <span className="text-rose-600 font-extrabold">Sisa {remaining} Kursi!</span>
+                                </div>
+                                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                                  <div className="h-full bg-gradient-to-r from-blue-600 to-amber-500" style={{ width: `${percent}%` }}></div>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                              <div>
+                                <span className="text-[10px] uppercase font-bold text-emerald-700">Early Bird</span>
+                                <div className="text-lg font-black text-[#0F2850]">{formatRupiah(prog.earlyBirdPrice)}</div>
+                              </div>
+
+                              <button
+                                onClick={() => setSelectedProgram(prog)}
+                                className="py-2.5 px-5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center gap-1.5"
+                              >
+                                <span>Daftar Sekarang</span>
+                                <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                              </button>
+                            </div>
+
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* FITUR "CEK & UNDUH SERTIFIKAT" */}
+                <div id="verifikasi-sertifikat" className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-xl">
+                  <div className="max-w-2xl mx-auto text-center mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+                      <i data-lucide="badge-check" className="w-7 h-7"></i>
+                    </div>
+                    <h3 className="text-xl sm:text-3xl font-black text-slate-900">
+                      Pusat Verifikasi & Unduh E-Sertifikat Resmi
+                    </h3>
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1">
+                      Cek legalitas nomor sertifikat pelatihan 32-40 JP dan unduh salinan berkas resmi (PDF).
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleCheckCertificate} className="max-w-xl mx-auto mb-4">
+                    <div className="flex flex-col sm:flex-row gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-200">
+                      <input
+                        type="text"
+                        value={certCodeInput}
+                        onChange={(e) => setCertCodeInput(e.target.value)}
+                        placeholder="Contoh: LCY-2024-EDU-092 atau LCY-2024-JRN-108"
+                        className="flex-1 px-4 py-2.5 bg-white text-xs sm:text-sm font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="py-2.5 px-6 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md flex items-center justify-center gap-1.5"
+                      >
+                        <i data-lucide="shield-check" className="w-4 h-4"></i>
+                        <span>Verifikasi</span>
+                      </button>
+                    </div>
+                    <div className="mt-2 text-center text-xs text-slate-400">
+                      <span>Coba kode: </span>
+                      <button type="button" onClick={() => setCertCodeInput('LCY-2024-EDU-092')} className="text-emerald-700 font-mono underline">LCY-2024-EDU-092</button>
+                      <span className="mx-1">•</span>
+                      <button type="button" onClick={() => setCertCodeInput('LCY-2024-JRN-108')} className="text-emerald-700 font-mono underline">LCY-2024-JRN-108</button>
+                    </div>
+                  </form>
+
+                  {hasCheckedCert && (
+                    <div className="max-w-xl mx-auto animate-fadeIn mt-4">
+                      {certResult ? (
+                        <div className="bg-emerald-50/80 border-2 border-emerald-500/50 rounded-2xl p-6 text-xs sm:text-sm space-y-3">
+                          <div className="flex items-center justify-between border-b border-emerald-200 pb-3">
+                            <div className="flex items-center gap-2">
+                              <i data-lucide="check-circle" className="w-5 h-5 text-emerald-700"></i>
+                              <span className="font-black text-emerald-950 uppercase">{certResult.status}</span>
+                            </div>
+                            <span className="font-mono text-xs font-bold bg-emerald-100 text-emerald-900 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                              {certResult.certificateNumber}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
+                            <div>
+                              <span className="text-[11px] text-slate-400 block">Nama Peserta:</span>
+                              <strong className="text-slate-950 text-base">{certResult.participantName}</strong>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-slate-400 block">Asal Institusi:</span>
+                              <strong>{certResult.institution}</strong>
+                            </div>
+                            <div className="sm:col-span-2">
+                              <span className="text-[11px] text-slate-400 block">Program Pelatihan:</span>
+                              <strong>{certResult.programTitle}</strong>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-slate-400 block">Beban JP & Predikat:</span>
+                              <strong>{certResult.jpTotal} JP • {certResult.grade}</strong>
+                            </div>
+                            <div>
+                              <span className="text-[11px] text-slate-400 block">Tanggal Terbit:</span>
+                              <strong>{certResult.issueDate}</strong>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-emerald-200 flex justify-end">
+                            <button
+                              onClick={() => alert(`Mengunduh Sertifikat Resmi ${certResult.certificateNumber} berformat PDF...`)}
+                              className="w-full sm:w-auto py-2.5 px-5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold flex items-center justify-center gap-2 shadow-md"
+                            >
+                              <i data-lucide="download" className="w-4 h-4"></i>
+                              <span>Unduh Berkas Sertifikat (PDF)</span>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 text-center text-rose-900 text-xs">
+                          <i data-lucide="alert-circle" className="w-8 h-8 text-rose-500 mx-auto mb-2"></i>
+                          <h4 className="font-bold text-sm">Nomor Sertifikat Tidak Terdaftar</h4>
+                          <p className="mt-1 text-slate-600">Pastikan format penulisan nomor sertifikat sudah sesuai.</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                </div>
+
+              </div>
+            </section>
+          )}
+
+          {/* 8. SEKSI PENDUKUNG (TRUST & SOCIAL PROOF) */}
+          <section id="tentang-kami" className="py-20 bg-white border-t border-slate-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              {/* Statistik Capaian (Counter) */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20 text-center">
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                  <div className="text-3xl sm:text-4xl font-black text-[#0F2850] mb-1">1.480+</div>
+                  <div className="text-sm font-bold text-slate-800">Buku Ber-ISBN Terbit</div>
+                  <div className="text-xs text-slate-500 mt-1">Perpusnas RI & IKAPI</div>
+                </div>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                  <div className="text-3xl sm:text-4xl font-black text-[#0F2850] mb-1">920+</div>
+                  <div className="text-sm font-bold text-slate-800">Artikel Terpublikasi</div>
+                  <div className="text-xs text-slate-500 mt-1">SINTA 2-4 & DOAJ</div>
+                </div>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                  <div className="text-3xl sm:text-4xl font-black text-[#0F2850] mb-1">34.500+</div>
+                  <div className="text-sm font-bold text-slate-800">Alumni Pelatihan</div>
+                  <div className="text-xs text-slate-500 mt-1">Dosen & Guru se-Indonesia</div>
+                </div>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
+                  <div className="text-3xl sm:text-4xl font-black text-[#0F2850] mb-1">140+</div>
+                  <div className="text-sm font-bold text-slate-800">Mitra Kampus</div>
+                  <div className="text-xs text-slate-500 mt-1">Tri Dharma Perguruan Tinggi</div>
+                </div>
+              </div>
+
+              {/* Logo Mitra */}
+              <div className="mb-20 text-center">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">Jejaring Kemitraan & Pengindeks</span>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-1 mb-8">Dipercaya oleh Perguruan Tinggi & Lembaga Riset Nasional</h3>
+
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-bold text-slate-700">
+                  {['KEMENDIKBUDRISTEK', 'PERPUSNAS RI', 'ANGGOTA IKAPI', 'DJKI HAKI', 'SINTA KEMDIKBUD', 'DOAJ INDEXED', 'CROSSREF DOI', 'UNIVERSITAS INDONESIA', 'UNIVERSITAS GADJAH MADA', 'ITB BANDUNG'].map((m, i) => (
+                    <div key={i} className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center justify-center text-center">
+                      <span>{m}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Testimoni */}
+              <div className="bg-[#0F2850] text-white rounded-3xl p-8 sm:p-12">
+                <div className="text-center max-w-2xl mx-auto mb-10">
+                  <span className="text-amber-400 text-xs font-bold uppercase tracking-wider">Testimoni Nyata</span>
+                  <h3 className="text-2xl sm:text-3xl font-black mt-1">Apa Kata Dosen, Peneliti & Guru?</h3>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {TESTIMONIALS.map((t) => (
+                    <div key={t.id} className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/15 flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] font-bold bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded uppercase">
+                          {t.service}
+                        </span>
+                        <p className="text-xs sm:text-sm text-slate-200 italic mt-4 mb-6 leading-relaxed">
+                          "{t.content}"
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3 pt-3 border-t border-white/10">
+                        <img src={t.avatar} className="w-10 h-10 rounded-full object-cover border border-amber-400" />
+                        <div className="text-xs">
+                          <strong className="text-white block">{t.name}</strong>
+                          <span className="text-slate-300 text-[11px] block">{t.title}</span>
+                          <span className="text-amber-300 text-[10px]">{t.institution}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* 9. FOOTER KOMPREHENSIF */}
+          <footer id="seksi-kontak" className="bg-[#0A192F] text-slate-300 pt-16 pb-12 border-t border-slate-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-slate-800">
+                
+                {/* Brand */}
+                <div className="lg:col-span-2 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-bold">
+                      <i data-lucide="book-open" className="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <span className="text-2xl font-black text-white">LICYUM</span>
+                      <span className="text-[10px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded ml-1">ID</span>
+                      <p className="text-xs text-slate-400">Publikasi Buku • E-Journal • Pelatihan</p>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+                    Licyum memadukan penerbitan buku ber-ISBN resmi IKAPI, repositori e-journal OJS terindeks SINTA & DOAJ, serta pelatihan peningkatan kapasitas pendidik 32 JP.
+                  </p>
+
+                  <div className="p-3 bg-slate-900 rounded-2xl border border-slate-800 text-xs">
+                    <div className="text-amber-400 font-bold flex items-center gap-1.5 mb-1">
+                      <i data-lucide="shield-check" className="w-4 h-4"></i>
+                      <span>Anggota Resmi IKAPI No. 612/DKI/2022</span>
+                    </div>
+                    <div className="text-slate-500 text-[11px]">
+                      Kemitraan resmi Perpustakaan Nasional RI & Kemenkumham RI.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Kolom 1 */}
+                <div className="space-y-2 text-xs">
+                  <h4 className="font-bold text-white uppercase tracking-wider mb-3">Penerbitan Buku</h4>
+                  <ul className="space-y-2 text-slate-400">
+                    <li><a href="#seksi-penerbitan" className="hover:text-amber-400">Paket Hemat & Silver</a></li>
+                    <li><a href="#seksi-penerbitan" className="hover:text-amber-400">Pengurusan ISBN & Barcode</a></li>
+                    <li><a href="#seksi-penerbitan" className="hover:text-amber-400">HAKI Hak Cipta Kemenkumham</a></li>
+                    <li><a href="#seksi-penerbitan" className="hover:text-amber-400">Konversi Skripsi/Tesis ke Buku</a></li>
+                    <li><a href="#seksi-penerbitan" className="hover:text-amber-400">Katalog Buku Akademik</a></li>
+                  </ul>
+                </div>
+
+                {/* Kolom 2 */}
+                <div className="space-y-2 text-xs">
+                  <h4 className="font-bold text-white uppercase tracking-wider mb-3">Portal Jurnal</h4>
+                  <ul className="space-y-2 text-slate-400">
+                    <li><a href="#seksi-jurnal" className="hover:text-emerald-400">LJET (SINTA 2)</a></li>
+                    <li><a href="#seksi-jurnal" className="hover:text-emerald-400">JIST (SINTA 3)</a></li>
+                    <li><a href="#seksi-jurnal" className="hover:text-emerald-400">LSER (SINTA 3)</a></li>
+                    <li><a href="#seksi-jurnal" className="hover:text-emerald-400">Author Guidelines & Template</a></li>
+                    <li><a href="#seksi-jurnal" className="hover:text-emerald-400">Cek Turnitin No-Repository</a></li>
+                  </ul>
+                </div>
+
+                {/* Kolom 3 */}
+                <div className="space-y-2 text-xs">
+                  <h4 className="font-bold text-white uppercase tracking-wider mb-3">Kontak & Kantor</h4>
+                  <div className="space-y-2 text-slate-400">
+                    <div><strong>Jakarta:</strong> Graha Licyum Lt. 3, Margonda Raya No. 188</div>
+                    <div><strong>Yogyakarta:</strong> Jl. Kaliurang KM 9.2, Sleman</div>
+                    <div><strong>WhatsApp:</strong> 0812-3456-7890</div>
+                    <div><strong>Email:</strong> redaksi@licyum.id</div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+                <div>© 2026 PT Licyum Cipta Akademika. Seluruh hak cipta dilindungi undang-undang.</div>
+                <div className="flex gap-4">
+                  <span>Kebijakan Privasi</span>
+                  <span>Syarat & Ketentuan</span>
+                  <span>Etika Publikasi (COPE)</span>
+                </div>
+              </div>
+
+            </div>
+          </footer>
+
+          {/* --- MODALS --- */}
+
+          {/* Modal Cek Status Terpadu */}
+          {statusModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-[#0F2850] text-white p-5 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <i data-lucide="shield-check" className="w-5 h-5 text-amber-400"></i>
+                    <h3 className="font-bold text-base">Cek Status Terpadu Licyum</h3>
+                  </div>
+                  <button onClick={() => setStatusModalOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <div className="grid grid-cols-3 gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs font-bold text-center">
+                    <button
+                      onClick={() => {
+                        setStatusDefaultTab('ISBN');
+                        setStatusInput('ISBN-9281-2024');
+                        setStatusResult(STATUS_TRACKING_SAMPLES['ISBN-9281-2024']);
+                      }}
+                      className={`py-2 rounded-lg ${statusDefaultTab === 'ISBN' ? 'bg-white text-[#0F2850] shadow-sm' : 'text-slate-600'}`}
+                    >
+                      Status ISBN
+                    </button>
+                    <button
+                      onClick={() => {
+                        setStatusDefaultTab('NASKAH_JURNAL');
+                        setStatusInput('JRN-REV-304');
+                        setStatusResult(STATUS_TRACKING_SAMPLES['JRN-REV-304']);
+                      }}
+                      className={`py-2 rounded-lg ${statusDefaultTab === 'NASKAH_JURNAL' ? 'bg-white text-emerald-800 shadow-sm' : 'text-slate-600'}`}
+                    >
+                      Naskah Jurnal
+                    </button>
+                    <button
+                      onClick={() => {
+                        setStatusDefaultTab('SERTIFIKAT');
+                        setStatusInput('SRT-VER-882');
+                        setStatusResult(STATUS_TRACKING_SAMPLES['SRT-VER-882']);
+                      }}
+                      className={`py-2 rounded-lg ${statusDefaultTab === 'SERTIFIKAT' ? 'bg-white text-amber-800 shadow-sm' : 'text-slate-600'}`}
+                    >
+                      Sertifikat
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSearchStatus} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={statusInput}
+                      onChange={(e) => setStatusInput(e.target.value)}
+                      placeholder="Ketik kode tracking / ID pengajuan..."
+                      className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono"
+                      required
+                    />
+                    <button type="submit" className="py-2.5 px-5 bg-[#0F2850] text-white font-bold text-xs rounded-xl shadow">
+                      Lacak
+                    </button>
+                  </form>
+
+                  {statusResult && (
+                    <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                      <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                        <strong className="font-mono text-sm">{statusResult.trackingCode}</strong>
+                        <span className="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                          {statusResult.statusLabel}
+                        </span>
+                      </div>
+                      <div>
+                        <strong className="text-slate-900 block text-sm">{statusResult.title}</strong>
+                        <span className="text-slate-500">Pemohon: {statusResult.applicant}</span>
+                      </div>
+                      <div>
+                        <div className="flex justify-between font-bold mb-1">
+                          <span>Progres:</span>
+                          <span className="text-[#0F2850]">{statusResult.statusPercent}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                          <div className="h-full bg-gradient-to-r from-amber-500 to-[#0F2850]" style={{ width: `${statusResult.statusPercent}%` }}></div>
+                        </div>
+                        <div className="text-[#0F2850] font-semibold mt-1.5 flex items-center gap-1">
+                          <i data-lucide="check-circle" className="w-3.5 h-3.5 text-emerald-600"></i>
+                          <span>{statusResult.currentStep}</span>
+                        </div>
+                      </div>
+                      <div className="bg-white p-2.5 rounded-xl border border-slate-200 text-slate-600">
+                        {statusResult.notes}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 bg-slate-100 border-t border-slate-200 text-right">
+                  <button onClick={() => setStatusModalOpen(false)} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Detail Buku */}
+          {selectedBook && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="bg-[#0F2850] text-white p-4 flex items-center justify-between">
+                  <span className="text-xs text-amber-400 font-bold uppercase">Detail Buku • Licyum Publishing</span>
+                  <button onClick={() => setSelectedBook(null)} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-5">
+                    <img src={selectedBook.coverUrl} className="w-40 h-56 object-cover rounded-xl shadow-md mx-auto sm:mx-0" />
+                    <div className="space-y-2 flex-1">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-[#0F2850] uppercase">
+                        {selectedBook.category}
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900 leading-snug">{selectedBook.title}</h3>
+                      <p className="text-xs font-semibold text-[#0F2850]">{selectedBook.author}</p>
+                      <div className="text-xl font-black text-[#0F2850]">{formatRupiah(selectedBook.price)}</div>
+                      <div className="text-xs text-slate-500 font-mono bg-slate-50 p-2 rounded-xl border border-slate-100">
+                        ISBN: {selectedBook.isbn} • {selectedBook.pages} Halaman • Tahun {selectedBook.year}
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold uppercase text-slate-400 mb-1">Sinopsis:</h5>
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+                      {selectedBook.synopsis}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end gap-2">
+                  <button onClick={() => setSelectedBook(null)} className="px-4 py-2 bg-white text-slate-700 rounded-xl text-xs font-bold border border-slate-300">
+                    Tutup
+                  </button>
+                  <button
+                    onClick={() => {
+                      const msg = `Halo Licyum, saya ingin membeli buku: "${selectedBook.title}" (ISBN: ${selectedBook.isbn}).`;
+                      window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank');
+                    }}
+                    className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs rounded-xl shadow flex items-center gap-1.5"
+                  >
+                    <i data-lucide="shopping-cart" className="w-4 h-4"></i>
+                    <span>Pesan via WhatsApp</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Detail Artikel Jurnal */}
+          {selectedArticle && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="bg-emerald-800 text-white p-4 flex items-center justify-between">
+                  <span className="text-xs text-emerald-200 font-bold uppercase">Open Access Paper • OJS Licyum</span>
+                  <button onClick={() => setSelectedArticle(null)} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-4">
+                  <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
+                    {selectedArticle.journalName} • {selectedArticle.volume}
+                  </span>
+                  <h3 className="text-lg font-black text-slate-900 leading-snug">{selectedArticle.title}</h3>
+                  <div className="text-xs text-slate-600 font-bold">
+                    {selectedArticle.authors.join(', ')}
+                    <div className="text-slate-400 font-normal">{selectedArticle.affiliation}</div>
+                  </div>
+                  <div className="text-xs font-mono text-slate-600 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    DOI: https://doi.org/{selectedArticle.doi}
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold uppercase text-slate-400 mb-1">Abstrak (Bahasa Indonesia & English):</h5>
+                    <p className="text-xs sm:text-sm text-slate-700 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+                      {selectedArticle.abstract}
+                    </p>
+                  </div>
+                </div>
+                <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end gap-2">
+                  <button onClick={() => setSelectedArticle(null)} className="px-4 py-2 bg-white text-slate-700 rounded-xl text-xs font-bold border border-slate-300">
+                    Tutup
+                  </button>
+                  <button
+                    onClick={() => alert(`Mengunduh PDF: "${selectedArticle.title}"...`)}
+                    className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5"
+                  >
+                    <i data-lucide="download" className="w-4 h-4"></i>
+                    <span>Unduh PDF Full-Text (Gratis)</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Pendaftaran Pelatihan */}
+          {selectedProgram && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="bg-amber-500 text-slate-950 p-4 flex items-center justify-between">
+                  <span className="text-xs font-black uppercase">Pendaftaran Pelatihan • {selectedProgram.durationJp} JP</span>
+                  <button onClick={() => setSelectedProgram(null)} className="w-8 h-8 rounded-lg bg-black/10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div className="p-6 overflow-y-auto space-y-4">
+                  <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200">
+                    <h4 className="font-bold text-slate-900 text-sm leading-snug">{selectedProgram.title}</h4>
+                    <div className="text-xs text-slate-500 mt-1">{selectedProgram.date} • {selectedProgram.method}</div>
+                    <div className="text-lg font-black text-[#0F2850] mt-1">{formatRupiah(selectedProgram.earlyBirdPrice)}</div>
+                  </div>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      alert('Pendaftaran berhasil! Tim Licyum akan menghubungi Anda melalui WhatsApp.');
+                      setSelectedProgram(null);
+                    }}
+                    className="space-y-3 text-xs"
+                  >
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Lengkap & Gelar (untuk Sertifikat):</label>
+                      <input type="text" required placeholder="Contoh: Dr. Budi Santoso, M.Pd." className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Asal Kampus / Sekolah:</label>
+                      <input type="text" required placeholder="Contoh: Universitas Indonesia" className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nomor WhatsApp Aktif:</label>
+                      <input type="tel" required placeholder="Contoh: 08123456789" className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    </div>
+                    <button type="submit" className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl shadow mt-2">
+                      Kirim Pendaftaran & Amankan Kursi
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Masuk / Daftar SSO */}
+          {authModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fadeIn">
+              <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-[#0F2850] text-white p-5 flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-base">{authMode === 'login' ? 'Masuk ke Licyum SSO' : 'Daftar Akun Akademisi'}</h3>
+                    <p className="text-[11px] text-slate-300">Satu akun untuk Buku, Jurnal & Pelatihan</p>
+                  </div>
+                  <button onClick={() => setAuthModalOpen(false)} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                    <i data-lucide="x" className="w-4 h-4"></i>
+                  </button>
+                </div>
+                <div className="p-5 space-y-4">
+                  <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-center">
+                    <button onClick={() => setAuthMode('login')} className={`flex-1 py-1.5 rounded-lg ${authMode === 'login' ? 'bg-white text-[#0F2850] shadow-sm' : 'text-slate-600'}`}>Masuk</button>
+                    <button onClick={() => setAuthMode('register')} className={`flex-1 py-1.5 rounded-lg ${authMode === 'register' ? 'bg-white text-[#0F2850] shadow-sm' : 'text-slate-600'}`}>Daftar</button>
+                  </div>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      alert('Autentikasi berhasil!');
+                      setAuthModalOpen(false);
+                    }}
+                    className="space-y-3 text-xs"
+                  >
+                    {authMode === 'register' && (
+                      <input type="text" placeholder="Nama Lengkap & Gelar" required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    )}
+                    <input type="email" placeholder="Email Dosen / Peneliti" required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    <input type="password" placeholder="Kata Sandi" required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl" />
+                    <button type="submit" className="w-full py-2.5 bg-[#0F2850] text-white font-bold rounded-xl shadow mt-2">
+                      {authMode === 'login' ? 'Masuk Sekarang' : 'Daftar Akun'}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal CRUD Admin & Ekosistem Database Manager */}
+          {adminModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/70 backdrop-blur-md animate-fadeIn">
+              <div className="bg-white w-full max-w-5xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[92vh]">
+                
+                {/* Header */}
+                <div className="bg-[#0A192F] text-white p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black">
+                      <i data-lucide="database" className="w-5 h-5"></i>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-black text-white">Licyum CRUD & Database Center</h3>
+                        <span className="text-[10px] font-bold bg-emerald-500 text-slate-950 px-2 py-0.5 rounded-full uppercase">
+                          Live Persistent
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">
+                        Kelola data Buku, Naskah Jurnal OJS, Pelatihan, E-Sertifikat, dan Tracking ISBN secara real-time.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        if (confirm('Reset database ke data awal?')) {
+                          localStorage.removeItem('licyum_books');
+                          localStorage.removeItem('licyum_articles');
+                          localStorage.removeItem('licyum_trainings');
+                          localStorage.removeItem('licyum_certs');
+                          localStorage.removeItem('licyum_tracks');
+                          setBooksData(BOOKS_DATA);
+                          setArticlesData(RECENT_ARTICLES);
+                          setTrainingsData(TRAINING_PROGRAMS);
+                          setCertificatesData(VERIFIED_CERTIFICATES);
+                          setTrackingsData(STATUS_TRACKING_SAMPLES);
+                          triggerNotice('Database berhasil di-reset ke data pabrik!');
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold flex items-center gap-1.5 border border-slate-700"
+                    >
+                      <i data-lucide="refresh-cw" className="w-3.5 h-3.5 text-amber-400"></i>
+                      <span>Reset DB</span>
+                    </button>
+                    <button
+                      onClick={() => setAdminModalOpen(false)}
+                      className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center"
+                    >
+                      <i data-lucide="x" className="w-5 h-5"></i>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Notice */}
+                {adminNotice && (
+                  <div className="bg-emerald-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between">
+                    <span>✓ {adminNotice}</span>
+                    <button onClick={() => setAdminNotice(null)}>✕</button>
+                  </div>
+                )}
+
+                {/* Tabs */}
+                <div className="bg-slate-100 px-6 py-2 border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs font-bold">
+                  <button
+                    onClick={() => setAdminTab('books')}
+                    className={`py-2 px-3.5 rounded-xl flex items-center gap-1.5 ${
+                      adminTab === 'books' ? 'bg-white text-[#0F2850] shadow-sm font-black' : 'text-slate-600'
+                    }`}
+                  >
+                    <i data-lucide="book-open" className="w-4 h-4 text-blue-600"></i>
+                    <span>1. Kelola Buku ({booksData.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('articles')}
+                    className={`py-2 px-3.5 rounded-xl flex items-center gap-1.5 ${
+                      adminTab === 'articles' ? 'bg-white text-emerald-800 shadow-sm font-black' : 'text-slate-600'
+                    }`}
+                  >
+                    <i data-lucide="file-spreadsheet" className="w-4 h-4 text-emerald-600"></i>
+                    <span>2. Kelola Jurnal ({articlesData.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('trainings')}
+                    className={`py-2 px-3.5 rounded-xl flex items-center gap-1.5 ${
+                      adminTab === 'trainings' ? 'bg-white text-amber-800 shadow-sm font-black' : 'text-slate-600'
+                    }`}
+                  >
+                    <i data-lucide="graduation-cap" className="w-4 h-4 text-amber-600"></i>
+                    <span>3. Kelola Pelatihan ({trainingsData.length})</span>
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('certificates')}
+                    className={`py-2 px-3.5 rounded-xl flex items-center gap-1.5 ${
+                      adminTab === 'certificates' ? 'bg-white text-purple-800 shadow-sm font-black' : 'text-slate-600'
+                    }`}
+                  >
+                    <i data-lucide="award" className="w-4 h-4 text-purple-600"></i>
+                    <span>4. Penerbitan Sertifikat ({Object.keys(certificatesData).length})</span>
+                  </button>
+                  <button
+                    onClick={() => setAdminTab('tracking')}
+                    className={`py-2 px-3.5 rounded-xl flex items-center gap-1.5 ${
+                      adminTab === 'tracking' ? 'bg-white text-rose-800 shadow-sm font-black' : 'text-slate-600'
+                    }`}
+                  >
+                    <i data-lucide="layers" className="w-4 h-4 text-rose-600"></i>
+                    <span>5. Progres Tracking</span>
+                  </button>
+                </div>
+
+                {/* Tab Content */}
+                <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                  
+                  {/* TAB 1: KELOLA BUKU CRUD */}
+                  {adminTab === 'books' && (
+                    <div className="space-y-6">
+                      <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <h4 className="text-sm font-black text-slate-900 mb-3 flex items-center gap-1.5">
+                          <i data-lucide="plus" className="w-4 h-4 text-blue-600"></i>
+                          <span>Tambah Buku Baru ke Katalog Penerbitan</span>
+                        </h4>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const f = e.target;
+                            const newB = {
+                              id: `lic-book-${Date.now().toString().slice(-4)}`,
+                              title: f.title.value,
+                              author: f.author.value,
+                              authorTitle: f.authorTitle.value || 'Penulis Licyum',
+                              category: f.category.value,
+                              price: Number(f.price.value),
+                              originalPrice: Number(f.originalPrice.value || f.price.value * 1.2),
+                              rating: 5.0,
+                              reviewsCount: 1,
+                              pages: Number(f.pages.value || 300),
+                              year: Number(f.year.value || 2026),
+                              isbn: f.isbn.value,
+                              synopsis: f.synopsis.value,
+                              tags: ['Akademisi', 'Buku Ajar'],
+                              coverUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600'
+                            };
+                            const updated = [newB, ...booksData];
+                            setBooksData(updated);
+                            localStorage.setItem('licyum_books', JSON.stringify(updated));
+                            triggerNotice(`Buku "${newB.title}" berhasil ditambahkan!`);
+                            f.reset();
+                          }}
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"
+                        >
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-slate-700 mb-1">Judul Buku *</label>
+                            <input name="title" required placeholder="Judul buku referensi..." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Kategori *</label>
+                            <select name="category" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl">
+                              <option value="Pendidikan">Pendidikan</option>
+                              <option value="Teknologi & AI">Teknologi & AI</option>
+                              <option value="Manajemen & Bisnis">Manajemen & Bisnis</option>
+                              <option value="Hukum">Hukum</option>
+                              <option value="Kesehatan & Medis">Kesehatan & Medis</option>
+                              <option value="Sosial Humaniora">Sosial Humaniora</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Penulis & Gelar *</label>
+                            <input name="author" required placeholder="Dr. Penulis, M.Pd." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Afiliasi Penulis</label>
+                            <input name="authorTitle" placeholder="Dosen Universitas..." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Nomor ISBN *</label>
+                            <input name="isbn" required placeholder="978-623-8891-xx-x" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Harga Diskon (Rp) *</label>
+                            <input name="price" type="number" required defaultValue="125000" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Harga Asli (Rp)</label>
+                            <input name="originalPrice" type="number" defaultValue="155000" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Halaman & Tahun</label>
+                            <div className="flex gap-2">
+                              <input name="pages" type="number" defaultValue="320" className="w-1/2 p-2.5 bg-white border border-slate-200 rounded-xl" />
+                              <input name="year" type="number" defaultValue="2026" className="w-1/2 p-2.5 bg-white border border-slate-200 rounded-xl" />
+                            </div>
+                          </div>
+                          <div className="sm:col-span-3">
+                            <label className="block font-bold text-slate-700 mb-1">Sinopsis</label>
+                            <textarea name="synopsis" rows="2" placeholder="Sinopsis ringkas buku..." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div className="sm:col-span-3 flex justify-end">
+                            <button type="submit" className="py-2.5 px-6 bg-[#0F2850] hover:bg-[#1E3A8A] text-white font-bold rounded-xl shadow">
+                              Tambah Buku ke Katalog
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      {/* Tabel Buku */}
+                      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-600">
+                            <tr>
+                              <th className="p-3">Judul Buku</th>
+                              <th className="p-3">Kategori</th>
+                              <th className="p-3">Penulis</th>
+                              <th className="p-3">ISBN</th>
+                              <th className="p-3">Harga</th>
+                              <th className="p-3 text-right">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {booksData.map((b) => (
+                              <tr key={b.id} className="hover:bg-slate-50/80">
+                                <td className="p-3 font-bold text-slate-900 max-w-xs truncate">{b.title}</td>
+                                <td className="p-3"><span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">{b.category}</span></td>
+                                <td className="p-3 text-slate-600">{b.author}</td>
+                                <td className="p-3 font-mono text-slate-500">{b.isbn}</td>
+                                <td className="p-3 font-black text-[#0F2850]">{formatRupiah(b.price)}</td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Hapus buku "${b.title}"?`)) {
+                                        const updated = booksData.filter((x) => x.id !== b.id);
+                                        setBooksData(updated);
+                                        localStorage.setItem('licyum_books', JSON.stringify(updated));
+                                        triggerNotice(`Buku "${b.title}" dihapus.`);
+                                      }
+                                    }}
+                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                                  >
+                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 4: PENERBITAN SERTIFIKAT CRUD (Real-Time Validasi!) */}
+                  {adminTab === 'certificates' && (
+                    <div className="space-y-6">
+                      <div className="bg-purple-50/70 p-5 rounded-2xl border border-purple-200">
+                        <h4 className="text-sm font-black text-purple-950 mb-1 flex items-center gap-1.5">
+                          <i data-lucide="award" className="w-4 h-4 text-purple-700"></i>
+                          <span>Penerbitan E-Sertifikat Resmi 32-40 JP Baru</span>
+                        </h4>
+                        <p className="text-xs text-purple-900 mb-3">
+                          Sertifikat yang diterbitkan di sini langsung bisa diverifikasi secara publik menggunakan nomor sertifikatnya!
+                        </p>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const f = e.target;
+                            const num = f.certNum.value.trim().toUpperCase();
+                            const newCert = {
+                              certificateNumber: num,
+                              participantName: f.name.value,
+                              programTitle: f.program.value,
+                              institution: f.inst.value,
+                              issueDate: f.date.value || 'Hari Ini',
+                              grade: f.grade.value || 'Sangat Memuaskan (A)',
+                              jpTotal: Number(f.jp.value || 32),
+                              status: 'VALID & TERVERIFIKASI',
+                              credentialId: `CRED-${Math.floor(10000 + Math.random() * 90000)}-LIC-2026`
+                            };
+                            const updated = { ...certificatesData, [num]: newCert };
+                            setCertificatesData(updated);
+                            localStorage.setItem('licyum_certs', JSON.stringify(updated));
+                            triggerNotice(`Sertifikat ${num} untuk ${newCert.participantName} berhasil diterbitkan!`);
+                            f.reset();
+                          }}
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"
+                        >
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Nomor Sertifikat *</label>
+                            <input name="certNum" required defaultValue={`LCY-2026-EDU-${Math.floor(100 + Math.random() * 900)}`} className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono font-bold" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-slate-700 mb-1">Nama Lengkap & Gelar Peserta *</label>
+                            <input name="name" required placeholder="Contoh: Dr. Budi Santoso, M.Pd." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-slate-700 mb-1">Program Pelatihan *</label>
+                            <input name="program" required defaultValue="Pelatihan Penulisan Buku Ajar & Monograf Ber-ISBN Sesuai Standar BSNP" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Asal Kampus / Sekolah *</label>
+                            <input name="inst" required placeholder="Universitas..." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Jam Pelajaran (JP)</label>
+                            <input name="jp" type="number" defaultValue="32" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Predikat</label>
+                            <input name="grade" defaultValue="Sangat Memuaskan (A)" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Tanggal Terbit</label>
+                            <input name="date" defaultValue="28 Februari 2026" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div className="sm:col-span-3 flex justify-end">
+                            <button type="submit" className="py-2.5 px-6 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+                              <i data-lucide="award" className="w-4 h-4"></i>
+                              <span>Terbitkan & Masukkan Database Verifikasi</span>
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+
+                      {/* Tabel Sertifikat Terdaftar */}
+                      <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-600">
+                            <tr>
+                              <th className="p-3">Nomor Sertifikat</th>
+                              <th className="p-3">Nama Peserta</th>
+                              <th className="p-3">Institusi</th>
+                              <th className="p-3">Beban JP</th>
+                              <th className="p-3 text-right">Aksi</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {Object.values(certificatesData).map((c) => (
+                              <tr key={c.certificateNumber} className="hover:bg-slate-50/80">
+                                <td className="p-3 font-mono font-bold text-emerald-800">{c.certificateNumber}</td>
+                                <td className="p-3 font-bold text-slate-900">{c.participantName}</td>
+                                <td className="p-3 text-slate-500">{c.institution}</td>
+                                <td className="p-3 font-bold">{c.jpTotal} JP</td>
+                                <td className="p-3 text-right">
+                                  <button
+                                    onClick={() => {
+                                      if (confirm(`Cabut sertifikat ${c.certificateNumber}?`)) {
+                                        const copy = { ...certificatesData };
+                                        delete copy[c.certificateNumber];
+                                        setCertificatesData(copy);
+                                        localStorage.setItem('licyum_certs', JSON.stringify(copy));
+                                        triggerNotice(`Sertifikat ${c.certificateNumber} dicabut.`);
+                                      }
+                                    }}
+                                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg"
+                                  >
+                                    <i data-lucide="trash-2" className="w-4 h-4"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 5: PROGRES TRACKING CRUD */}
+                  {adminTab === 'tracking' && (
+                    <div className="space-y-6">
+                      <div className="bg-rose-50/70 p-5 rounded-2xl border border-rose-200">
+                        <h4 className="text-sm font-black text-rose-950 mb-1 flex items-center gap-1.5">
+                          <i data-lucide="layers" className="w-4 h-4 text-rose-700"></i>
+                          <span>Update Progres Pelacakan ISBN & Naskah Jurnal</span>
+                        </h4>
+                        <p className="text-xs text-rose-900 mb-3">
+                          Ubah persentase dan tahapan status berkas (misal: ISBN-9281-2024 atau JRN-REV-304). Perubahan akan langsung terlihat saat pengguna mengecek status.
+                        </p>
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            const f = e.target;
+                            const code = f.code.value.trim().toUpperCase();
+                            const updatedItem = {
+                              trackingCode: code,
+                              type: f.type.value,
+                              title: f.title.value,
+                              applicant: f.applicant.value,
+                              submissionDate: 'Hari Ini',
+                              currentStep: f.step.value,
+                              statusPercent: Number(f.percent.value),
+                              statusLabel: f.label.value,
+                              notes: f.notes.value
+                            };
+                            const copy = { ...trackingsData, [code]: updatedItem };
+                            setTrackingsData(copy);
+                            localStorage.setItem('licyum_tracks', JSON.stringify(copy));
+                            triggerNotice(`Tracking ${code} berhasil diperbarui ke ${updatedItem.statusPercent}%!`);
+                          }}
+                          className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs"
+                        >
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Kode Tracking *</label>
+                            <input name="code" required defaultValue="ISBN-9281-2024" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-mono font-bold" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Jenis Dokumen</label>
+                            <select name="type" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl">
+                              <option value="ISBN">ISBN Penerbitan Buku</option>
+                              <option value="NASKAH_JURNAL">Naskah Jurnal OJS</option>
+                              <option value="SERTIFIKAT">Sertifikat Pelatihan</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Progres (%) *</label>
+                            <input name="percent" type="number" min="0" max="100" defaultValue="90" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-slate-700 mb-1">Judul Karya / Buku *</label>
+                            <input name="title" required defaultValue="Transformasi Digital dan Tata Kelola Sekolah Unggul" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Nama Pemohon</label>
+                            <input name="applicant" defaultValue="Dr. Wahyu Pratama, M.Pd." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className="block font-bold text-slate-700 mb-1">Tahapan Saat Ini *</label>
+                            <input name="step" required defaultValue="Penetapan Nomor ISBN & Barcode oleh Tim Perpusnas RI" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div>
+                            <label className="block font-bold text-slate-700 mb-1">Label Status</label>
+                            <select name="label" className="w-full p-2.5 bg-white border border-slate-200 rounded-xl font-bold">
+                              <option value="Dalam Antrean">Dalam Antrean</option>
+                              <option value="Proses Review">Proses Review</option>
+                              <option value="Revisi Diperlukan">Revisi Diperlukan</option>
+                              <option value="Disetujui Perpusnas">Disetujui Perpusnas</option>
+                              <option value="Terbit & Final">Terbit & Final</option>
+                            </select>
+                          </div>
+                          <div className="sm:col-span-3">
+                            <label className="block font-bold text-slate-700 mb-1">Catatan Tim Redaksi</label>
+                            <textarea name="notes" rows="2" defaultValue="Naskah final telah disetujui. Nomor ISBN sedang digenerate oleh Perpusnas RI." className="w-full p-2.5 bg-white border border-slate-200 rounded-xl" />
+                          </div>
+                          <div className="sm:col-span-3 flex justify-end">
+                            <button type="submit" className="py-2.5 px-6 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-xl shadow flex items-center gap-1.5">
+                              <i data-lucide="save" className="w-4 h-4"></i>
+                              <span>Simpan Perubahan Tracking</span>
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                <div className="p-4 bg-slate-100 border-t border-slate-200 flex justify-end">
+                  <button onClick={() => setAdminModalOpen(false)} className="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-[#0F2850]">
+                    Tutup Panel
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    // Render App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
