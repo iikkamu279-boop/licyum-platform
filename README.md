@@ -162,3 +162,5 @@ npm run dev
 # 5. Akses melalui peramban
 http://localhost:3000
 ```
+#   l i c y u m - p l a t f o r m  
+ 
