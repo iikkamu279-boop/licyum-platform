@@ -1,49 +1,58 @@
 @echo off
-title Push to GitHub — PT Licyum Cipta Akademika
+title Push to GitHub — iikkamu279-boop/licyum
 echo =========================================================================
-echo  PUSH PROJECT KE GITHUB REPOSITORY
+echo  PUSH PROJECT KE GITHUB: https://github.com/iikkamu279-boop/licyum.git
 echo  PT LICYUM CIPTA AKADEMIKA
 echo =========================================================================
 echo.
-echo Langkah Persiapan:
-echo  1. Buka browser: https://github.com/new
-echo  2. Buat repository baru (misal: "licyum-platform" atau "licyum")
-echo     (JANGAN centang "Add a README file" atau .gitignore)
-echo  3. Salin (Copy) URL repository Anda (HTTPS).
-echo.
-set /p REPO_URL="Tempel (Paste) URL GitHub Repository Anda di sini: "
+set PATH=%PATH%;C:\Users\lenovo\AppData\Local\Programs\MinGit\cmd
 
-if "%REPO_URL%"=="" (
-    echo URL tidak boleh kosong! Dibatalkan.
-    pause
-    exit /b
+echo Repository Target: https://github.com/iikkamu279-boop/licyum.git
+echo Branch: main
+echo.
+echo Pilih metode autentikasi GitHub Anda:
+echo  [1] Gunakan GitHub Personal Access Token (Direkomendasikan - 100%% Sukses)
+echo  [2] Coba Login Biasa (Git Push langsung)
+echo.
+set /p PILIHAN="Pilih metode (1 atau 2, default 1): "
+
+if "%PILIHAN%"=="2" (
+    echo.
+    echo Menjalankan git push -u origin main...
+    call git push -u origin main
+) else (
+    echo.
+    echo Cara membuat Personal Access Token di GitHub:
+    echo  1. Buka browser: https://github.com/settings/tokens/new
+    echo  2. Beri nama Note (misal: "licyum-deploy")
+    echo  3. Centang opsi: "repo" (Full control of private/public repositories)
+    echo  4. Klik tombol hijau "Generate token" di bagian paling bawah
+    echo  5. Salin token tersebut (formatnya dimulai dengan: ghp_...)
+    echo.
+    set /p GH_TOKEN="Tempel (Paste) token GitHub Anda (ghp_...): "
+    
+    if "%GH_TOKEN%"=="" (
+        echo Token tidak boleh kosong! Batal.
+        pause
+        exit /b
+    )
+
+    echo.
+    echo Melakukan push ke https://github.com/iikkamu279-boop/licyum.git...
+    call git push https://%GH_TOKEN%@github.com/iikkamu279-boop/licyum.git main
 )
-
-echo.
-echo [1/3] Menghubungkan remote origin ke %REPO_URL%...
-call git remote remove origin 2>nul
-call git remote add origin %REPO_URL%
-
-echo.
-echo [2/3] Memastikan branch utama adalah main...
-call git branch -M main
-
-echo.
-echo [3/3] Melakukan push ke GitHub...
-echo (Jika diminta login, silakan klik Sign in with browser di jendela yang muncul)
-echo.
-call git push -u origin main
 
 echo.
 if %errorlevel% equ 0 (
     echo =========================================================================
-    echo  SELAMAT! Project berhasil terdeploy ke GitHub:
-    echo  %REPO_URL%
+    echo  SELAMAT! Project Licyum berhasil terdeploy ke GitHub:
+    echo  https://github.com/iikkamu279-boop/licyum
     echo =========================================================================
 ) else (
     echo =========================================================================
-    echo  Push gagal atau dibatalkan. Pastikan URL repository benar dan Anda
-    echo  memiliki izin akses ke repository tersebut.
+    echo  Push belum berhasil.
+    echo  Pastikan Token memiliki centang hak akses 'repo' dan akun Anda
+    echo  adalah pemilik repository iikkamu279-boop/licyum.
     echo =========================================================================
 )
 
