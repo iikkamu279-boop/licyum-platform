@@ -1,58 +1,47 @@
 @echo off
-title Push to GitHub — iikkamu279-boop/licyum
+title Push to GitHub — iikkamu279-boop/licyum-platform
 echo =========================================================================
-echo  PUSH PROJECT KE GITHUB: https://github.com/iikkamu279-boop/licyum.git
+echo  PUSH PROJECT KE GITHUB: https://github.com/iikkamu279-boop/licyum-platform.git
 echo  PT LICYUM CIPTA AKADEMIKA
 echo =========================================================================
 echo.
 set PATH=%PATH%;C:\Users\lenovo\AppData\Local\Programs\MinGit\cmd
 
-echo Repository Target: https://github.com/iikkamu279-boop/licyum.git
+echo Repository Target: https://github.com/iikkamu279-boop/licyum-platform.git
 echo Branch: main
 echo.
-echo Pilih metode autentikasi GitHub Anda:
-echo  [1] Gunakan GitHub Personal Access Token (Direkomendasikan - 100%% Sukses)
-echo  [2] Coba Login Biasa (Git Push langsung)
+echo Membuka halaman generate token di browser Anda...
+start https://github.com/settings/tokens/new
 echo.
-set /p PILIHAN="Pilih metode (1 atau 2, default 1): "
+echo Langkah di browser:
+echo  1. Halaman pembuatan token GitHub sudah terbuka.
+echo  2. Beri nama Note (misal: "licyum-platform-token").
+echo  3. Pastikan kotak [repo] dicentang.
+echo  4. Klik tombol hijau "Generate token" di bawah.
+echo  5. Salin token tersebut (dimulai dengan ghp_...).
+echo.
+set /p GH_TOKEN="Tempelkan (Paste) token GitHub Anda (ghp_...) di sini: "
 
-if "%PILIHAN%"=="2" (
+if "%GH_TOKEN%"=="" (
     echo.
-    echo Menjalankan git push -u origin main...
+    echo Token kosong. Mencoba push langsung (interaktif)...
     call git push -u origin main
 ) else (
     echo.
-    echo Cara membuat Personal Access Token di GitHub:
-    echo  1. Buka browser: https://github.com/settings/tokens/new
-    echo  2. Beri nama Note (misal: "licyum-deploy")
-    echo  3. Centang opsi: "repo" (Full control of private/public repositories)
-    echo  4. Klik tombol hijau "Generate token" di bagian paling bawah
-    echo  5. Salin token tersebut (formatnya dimulai dengan: ghp_...)
-    echo.
-    set /p GH_TOKEN="Tempel (Paste) token GitHub Anda (ghp_...): "
-    
-    if "%GH_TOKEN%"=="" (
-        echo Token tidak boleh kosong! Batal.
-        pause
-        exit /b
-    )
-
-    echo.
-    echo Melakukan push ke https://github.com/iikkamu279-boop/licyum.git...
-    call git push https://%GH_TOKEN%@github.com/iikkamu279-boop/licyum.git main
+    echo Mengunggah ke https://github.com/iikkamu279-boop/licyum-platform.git...
+    call git push https://%GH_TOKEN%@github.com/iikkamu279-boop/licyum-platform.git main
 )
 
 echo.
 if %errorlevel% equ 0 (
     echo =========================================================================
-    echo  SELAMAT! Project Licyum berhasil terdeploy ke GitHub:
-    echo  https://github.com/iikkamu279-boop/licyum
+    echo  SELAMAT! Seluruh project Licyum berhasil terdeploy ke GitHub:
+    echo  https://github.com/iikkamu279-boop/licyum-platform
     echo =========================================================================
 ) else (
     echo =========================================================================
     echo  Push belum berhasil.
-    echo  Pastikan Token memiliki centang hak akses 'repo' dan akun Anda
-    echo  adalah pemilik repository iikkamu279-boop/licyum.
+    echo  Pastikan Token Anda memiliki centang hak akses 'repo'.
     echo =========================================================================
 )
 
